@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CyberShield AI — Enterprise Cyber Defense & Threat Hunting Platform</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+:root{ color-scheme: light; }
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0e17; --bg2:#111726; --bg3:#161d2e; --panel:#131a29; --panel2:#1a2336;
+  --line:#243049; --line2:#2e3c5a; --txt:#e6ecf7; --txt2:#9fb0cc; --txt3:#6b7c9e;
+  --accent:#3b82f6; --accent2:#22d3ee; --good:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+  --crit:#dc2626; --high:#f97316; --med:#eab308; --low:#3b82f6;
+  --purple:#a855f7; --shadow:0 8px 30px rgba(0,0,0,.45);
+}
+[data-theme="light"]{
+  --bg:#eef2f8; --bg2:#ffffff; --bg3:#f4f7fc; --panel:#ffffff; --panel2:#f7fafd;
+  --line:#dce4f0; --line2:#cdd8ea; --txt:#142036; --txt2:#46566f; --txt3:#7888a3;
+  --shadow:0 8px 24px rgba(20,40,80,.10);
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);color:var(--txt);height:100vh;overflow:hidden;font-size:14px;line-height:1.5}
+.app{display:grid;grid-template-columns:248px 1fr;grid-template-rows:58px 1fr;height:100vh}
+header{grid-column:1/3;display:flex;align-items:center;gap:16px;padding:0 18px;
+  background:linear-gradient(90deg,var(--bg2),var(--bg3));border-bottom:1px solid var(--line);z-index:30}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;letter-spacing:.3px;white-space:nowrap}
+.logo .mark{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:800;box-shadow:0 0 14px rgba(59,130,246,.5)}
+.logo b{background:linear-gradient(90deg,#60a5fa,#22d3ee);-webkit-background-clip:text;background-clip:text;color:transparent}
+.logo small{color:var(--txt3);font-weight:500;font-size:10.5px;display:block;letter-spacing:.2px}
+.search{flex:1;max-width:440px;display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line);
+  border-radius:9px;padding:7px 12px;color:var(--txt3)}
+.search input{flex:1;background:none;border:none;outline:none;color:var(--txt);font-size:13px}
+.hdr-spacer{flex:1}
+.riskpill{display:flex;align-items:center;gap:9px;background:var(--bg);border:1px solid var(--line);
+  padding:5px 12px;border-radius:9px;cursor:default}
+.riskpill .v{font-size:18px;font-weight:800}
+.riskpill .lab{font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:.6px;line-height:1.1}
+.hdr-btn{background:var(--bg);border:1px solid var(--line);color:var(--txt2);border-radius:9px;
+  padding:7px 11px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:7px;transition:.15s}
+.hdr-btn:hover{border-color:var(--accent);color:var(--txt)}
+.hdr-btn.cta{background:linear-gradient(135deg,var(--accent),var(--purple));color:#fff;border:none}
+.role-select{background:var(--bg);border:1px solid var(--line);color:var(--txt);border-radius:9px;
+  padding:7px 10px;font-size:13px;cursor:pointer;outline:none}
+.bell{position:relative}
+.bell .dot{position:absolute;top:3px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--bad);box-shadow:0 0 0 2px var(--bg2)}
+nav{background:var(--bg2);border-right:1px solid var(--line);overflow-y:auto;padding:10px 0}
+nav::-webkit-scrollbar{width:8px} nav::-webkit-scrollbar-thumb{background:var(--line);border-radius:5px}
+.nav-grp{padding:11px 18px 5px;font-size:10px;text-transform:uppercase;letter-spacing:.9px;color:var(--txt3);font-weight:700}
+.nav-item{display:flex;align-items:center;gap:11px;padding:9px 18px;cursor:pointer;color:var(--txt2);
+  font-size:13.5px;border-left:3px solid transparent;transition:.12s}
+.nav-item:hover{background:var(--bg3);color:var(--txt)}
+.nav-item.active{background:var(--panel2);color:var(--txt);border-left-color:var(--accent);font-weight:600}
+.nav-item .ico{width:18px;text-align:center;font-size:15px;opacity:.92}
+.nav-item .badge{margin-left:auto;background:var(--bad);color:#fff;font-size:10px;font-weight:700;
+  border-radius:10px;padding:1px 7px;min-width:18px;text-align:center}
+.nav-item .badge.amber{background:var(--warn)} .nav-item .badge.blue{background:var(--accent)}
+main{overflow-y:auto;padding:22px 26px 60px}
+main::-webkit-scrollbar{width:10px} main::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:18px;gap:16px;flex-wrap:wrap}
+.page-head h1{font-size:22px;font-weight:700;letter-spacing:.2px}
+.page-head .sub{color:var(--txt2);font-size:13px;margin-top:3px}
+.page-head .role-tag{font-size:11px;color:var(--accent2);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.btn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:8px;
+  padding:8px 14px;cursor:pointer;font-size:13px;font-weight:600;transition:.15s}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--purple));border:none;color:#fff}
+.btn.sm{padding:5px 10px;font-size:12px}
+.btn.ghost{background:none}
+.grid{display:grid;gap:16px}
+.g4{grid-template-columns:repeat(4,1fr)} .g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)} .g6{grid-template-columns:repeat(6,1fr)}
+.col-2{grid-column:span 2}
+@media(max-width:1180px){.g4,.g6{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:16px 17px;box-shadow:var(--shadow)}
+.card h3{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card h3 .more{font-size:11px;color:var(--txt3);font-weight:500;cursor:pointer}
+.kpi{position:relative;overflow:hidden}
+.kpi .lab{font-size:11.5px;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.kpi .val{font-size:30px;font-weight:800;margin:7px 0 2px;line-height:1}
+.kpi .delta{font-size:12px;font-weight:600}
+.kpi .spark{position:absolute;right:12px;top:14px;font-size:22px;opacity:.18}
+.up{color:var(--bad)} .down{color:var(--good)} .flat{color:var(--txt3)}
+.ring{width:108px;height:108px;position:relative;margin:0 auto}
+.ring svg{transform:rotate(-90deg)}
+.ring .lbl{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.ring .lbl b{font-size:26px;font-weight:800;display:block;line-height:1}
+.ring .lbl span{font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;
+  text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+.t-crit{background:rgba(220,38,38,.16);color:#f87171;border:1px solid rgba(220,38,38,.4)}
+.t-high{background:rgba(249,115,22,.15);color:#fb923c;border:1px solid rgba(249,115,22,.4)}
+.t-med{background:rgba(234,179,8,.15);color:#fbbf24;border:1px solid rgba(234,179,8,.38)}
+.t-low{background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.38)}
+.t-good{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.38)}
+.t-info{background:rgba(148,163,184,.15);color:#94a3b8;border:1px solid rgba(148,163,184,.34)}
+.t-purple{background:rgba(168,85,247,.15);color:#c084fc;border:1px solid rgba(168,85,247,.4)}
+.dot-s{width:8px;height:8px;border-radius:50%;display:inline-block}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:var(--txt3);font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;
+  font-weight:700;padding:9px 10px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel)}
+td{padding:10px;border-bottom:1px solid var(--line)}
+tr.row{cursor:pointer;transition:.1s} tr.row:hover td{background:var(--bg3)}
+.mono{font-family:'Cascadia Code',Consolas,monospace;font-size:12px}
+.bar{height:7px;border-radius:4px;background:var(--line);overflow:hidden;min-width:60px}
+.bar i{display:block;height:100%;border-radius:4px}
+.avatar{width:26px;height:26px;border-radius:50%;display:inline-grid;place-items:center;font-size:11px;font-weight:700;
+  background:var(--panel2);border:1px solid var(--line2);color:var(--accent2)}
+.muted{color:var(--txt2)} .tiny{font-size:11.5px}
+.linkish{color:var(--accent2);cursor:pointer} .linkish:hover{text-decoration:underline}
+.scoreboard{display:flex;gap:5px;align-items:center}
+.chart-wrap{position:relative;height:200px} .chart-wrap.sm{height:150px} .chart-wrap.lg{height:260px}
+.plist{display:flex;flex-direction:column;gap:11px}
+.prow{display:flex;align-items:center;gap:11px;font-size:13px}
+.prow .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prow .pc{width:42px;text-align:right;font-weight:700;font-size:12px}
+.mitre{display:grid;grid-template-columns:repeat(13,1fr);gap:5px;overflow-x:auto}
+.mitre .col{min-width:88px}
+.mitre .ch{font-size:9.5px;font-weight:700;color:var(--txt2);text-align:center;padding:6px 2px;
+  border-bottom:1px solid var(--line);margin-bottom:5px;height:46px;display:flex;align-items:center;justify-content:center;text-transform:uppercase}
+.tech{font-size:9.5px;padding:5px 4px;border-radius:5px;margin-bottom:4px;text-align:center;cursor:pointer;
+  border:1px solid var(--line);background:var(--bg3);color:var(--txt2);line-height:1.2;transition:.12s}
+.tech:hover{transform:translateY(-1px);border-color:var(--accent2)}
+.tech.l1{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.35);color:#93c5fd}
+.tech.l2{background:rgba(234,179,8,.15);border-color:rgba(234,179,8,.4);color:#fcd34d}
+.tech.l3{background:rgba(239,68,68,.2);border-color:rgba(239,68,68,.5);color:#fca5a5;font-weight:700}
+.tl{position:relative;padding-left:26px}
+.tl::before{content:'';position:absolute;left:8px;top:4px;bottom:4px;width:2px;background:var(--line2)}
+.tl-item{position:relative;padding:0 0 16px 0}
+.tl-item::before{content:'';position:absolute;left:-22px;top:4px;width:11px;height:11px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 0 3px var(--bg)}
+.tl-item.crit::before{background:var(--bad)} .tl-item.good::before{background:var(--good)}
+.tl-item .tm{font-size:11px;color:var(--txt3);font-family:monospace}
+.tl-item .ev{font-size:13px;margin-top:2px}
+.copilot{position:fixed;top:0;right:-440px;width:430px;height:100vh;background:var(--bg2);
+  border-left:1px solid var(--line);box-shadow:-12px 0 40px rgba(0,0,0,.4);z-index:60;transition:right .28s ease;
+  display:flex;flex-direction:column}
+.copilot.open{right:0}
+.cop-head{padding:15px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:11px}
+.cop-head .mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--purple),var(--accent2));
+  display:grid;place-items:center;color:#fff;font-weight:800}
+.cop-head h4{font-size:14px} .cop-head small{color:var(--txt3);font-size:11px}
+.cop-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+.cop-msg{display:flex;gap:10px;max-width:100%}
+.cop-msg .b{padding:11px 13px;border-radius:12px;font-size:13px;line-height:1.55}
+.cop-msg.ai .b{background:var(--panel2);border:1px solid var(--line)}
+.cop-msg.me{flex-direction:row-reverse}
+.cop-msg.me .b{background:linear-gradient(135deg,var(--accent),var(--purple));color:#fff}
+.cop-av{width:28px;height:28px;border-radius:8px;flex:none;display:grid;place-items:center;font-size:13px;
+  background:var(--panel2);border:1px solid var(--line)}
+.cop-foot{padding:13px;border-top:1px solid var(--line)}
+.cop-chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.chip{font-size:11.5px;padding:5px 10px;border-radius:16px;background:var(--bg3);border:1px solid var(--line);
+  cursor:pointer;color:var(--txt2);transition:.12s}
+.chip:hover{border-color:var(--accent2);color:var(--txt)}
+.cop-input{display:flex;gap:8px}
+.cop-input input{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:9px 12px;
+  color:var(--txt);outline:none;font-size:13px}
+.cop-input button{background:linear-gradient(135deg,var(--accent),var(--purple));border:none;color:#fff;
+  border-radius:9px;padding:0 14px;cursor:pointer;font-weight:700}
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:55;display:none}
+.backdrop.show{display:block}
+.drawer{position:fixed;top:0;right:-720px;width:700px;max-width:92vw;height:100vh;background:var(--bg2);
+  border-left:1px solid var(--line);z-index:65;transition:right .28s ease;overflow-y:auto;box-shadow:-12px 0 40px rgba(0,0,0,.45)}
+.drawer.open{right:0}
+.drawer-head{padding:18px 22px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg2);z-index:2}
+.drawer-body{padding:20px 22px 50px}
+.x{cursor:pointer;color:var(--txt3);font-size:20px;line-height:1;background:none;border:none}
+.x:hover{color:var(--txt)}
+.flex{display:flex;align-items:center;gap:10px} .between{justify-content:space-between} .wrap{flex-wrap:wrap}
+.sec-title{font-size:12px;text-transform:uppercase;letter-spacing:.7px;color:var(--txt3);font-weight:700;margin:6px 0 10px}
+.divider{height:1px;background:var(--line);margin:16px 0}
+.pill-row{display:flex;flex-wrap:wrap;gap:8px}
+.note{background:var(--bg3);border:1px solid var(--line);border-radius:9px;padding:11px 13px;font-size:12.5px;color:var(--txt2)}
+.kv{display:grid;grid-template-columns:140px 1fr;gap:7px 14px;font-size:13px}
+.kv .k{color:var(--txt3)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;flex-wrap:wrap}
+.tab{padding:8px 14px;cursor:pointer;font-size:13px;color:var(--txt2);border-bottom:2px solid transparent;font-weight:600}
+.tab.active{color:var(--txt);border-bottom-color:var(--accent)}
+.codeblk{background:#0b1020;border:1px solid var(--line);border-radius:9px;padding:13px;font-family:monospace;
+  font-size:12px;color:#9fe0ff;white-space:pre-wrap;line-height:1.6;overflow-x:auto}
+.hl-k{color:#c084fc} .hl-s{color:#86efac} .hl-f{color:#fbbf24}
+.empty{text-align:center;color:var(--txt3);padding:40px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--txt2);margin-top:8px}
+.legend span{display:flex;align-items:center;gap:5px}
+.fade-in{animation:fi .35s ease}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.flow{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.flow .node{background:var(--panel2);border:1px solid var(--line2);border-radius:9px;padding:9px 13px;font-size:12px;text-align:center}
+.flow .arr{color:var(--txt3);font-size:18px}
+.stepper{display:flex;flex-direction:column;gap:0}
+.step{display:flex;gap:13px;padding:11px 0;border-bottom:1px dashed var(--line)}
+.step .n{width:26px;height:26px;border-radius:50%;background:var(--panel2);border:1px solid var(--line2);
+  flex:none;display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--accent2)}
+.step .ct b{font-size:13px} .step .ct p{font-size:12px;color:var(--txt2);margin-top:2px}
+/* RTL (Arabic) */
+[dir="rtl"] body{direction:rtl}
+[dir="rtl"] .nav-item{border-left:none;border-right:3px solid transparent}
+[dir="rtl"] .nav-item.active{border-right-color:var(--accent)}
+[dir="rtl"] .nav-item .badge{margin-left:0;margin-right:auto}
+[dir="rtl"] .kpi .spark{right:auto;left:12px}
+[dir="rtl"] .tl{padding-left:0;padding-right:26px}
+[dir="rtl"] .tl::before{left:auto;right:8px}
+[dir="rtl"] .tl-item::before{left:auto;right:-22px}
+[dir="rtl"] .step .n,[dir="rtl"] .cop-av,[dir="rtl"] .logo .mark{transform:scaleX(1)}
+[dir="rtl"] th{text-align:right}
+[dir="rtl"] .codeblk,[dir="rtl"] .mono{direction:ltr;text-align:left}
+:lang(te){font-family:'Noto Sans Telugu','Gautami','Segoe UI',system-ui,sans-serif}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">
+      <div class="mark">CS</div>
+      <div>CyberShield <b>AI</b><small>Enterprise Cyber Defense &amp; Threat Hunting</small></div>
+    </div>
+    <div class="search">
+      &#128269; <input id="globalSearch" placeholder="Search assets, users, IOCs, alerts, incidents…  (try: 'DNS tunneling')" />
+    </div>
+    <div class="hdr-spacer"></div>
+    <div class="riskpill" title="Enterprise Cyber Risk Score">
+      <span id="hdrRiskDot" class="dot-s" style="background:var(--high)"></span>
+      <div><div class="lab" id="riskLab">Cyber Risk</div></div>
+      <span class="v" id="hdrRisk" style="color:var(--high)">78</span>
+    </div>
+    <select class="role-select" id="langSelect" title="Language" style="max-width:130px"></select>
+    <select class="role-select" id="roleSelect" title="Active role"></select>
+    <button class="hdr-btn bell" title="Notifications" onclick="go('incidents')">&#128276;<span class="dot"></span></button>
+    <button class="hdr-btn" id="themeBtn" title="Toggle theme" onclick="toggleTheme()">&#9728;&#65039;</button>
+    <button class="hdr-btn cta" id="askClaudeBtn" onclick="openCopilot()">&#10024; Ask Claude</button>
+  </header>
+  <nav id="nav"></nav>
+  <main id="main"></main>
+</div>
+
+<div class="copilot" id="copilot">
+  <div class="cop-head">
+    <div class="mark">&#10024;</div>
+    <div style="flex:1"><h4>Claude &middot; <span id="copTitle">Cyber Defense Copilot</span></h4><small id="copCtx">Powered by Claude &middot; context: Dashboard</small></div>
+    <button class="x" onclick="closeCopilot()">&times;</button>
+  </div>
+  <div class="cop-body" id="copBody"></div>
+  <div class="cop-foot">
+    <div class="cop-chips" id="copChips"></div>
+    <div class="cop-input">
+      <input id="copInput" placeholder="Ask anything — investigate, summarize, hunt…" onkeydown="if(event.key==='Enter')sendCop()" />
+      <button onclick="sendCop()">&#10148;</button>
+    </div>
+  </div>
+</div>
+
+<div class="backdrop" id="backdrop" onclick="closeAll()"></div>
+<div class="drawer" id="drawer"><div id="drawerContent"></div></div>
+
+<script>
+const ROLES = {
+  exec:    {name:'CISO / Executive', home:'dashboard', view:'exec'},
+  socmgr:  {name:'SOC Manager', home:'dashboard', view:'socmgr'},
+  l1:      {name:'SOC Analyst L1', home:'soc', view:'l1'},
+  l3:      {name:'SOC Analyst L2/L3', home:'soc', view:'l3'},
+  hunter:  {name:'Threat Hunter', home:'hunt', view:'hunter'},
+  iam:     {name:'IAM / PAM Analyst', home:'iam', view:'iam'},
+  net:     {name:'Network Security Eng', home:'network', view:'net'},
+  appsec:  {name:'AppSec Engineer', home:'appsec', view:'appsec'},
+  cloud:   {name:'Cloud Security Eng', home:'cloud', view:'cloud'},
+  grc:     {name:'Compliance / GRC', home:'compliance', view:'grc'},
+};
+let state = { role:'exec', module:'dashboard', theme:'dark', lang:'en' };
+
+/* ============================ i18n (EN / AR / TE) ============================ */
+const LANGS=[['en','English'],['ar','العربية'],['te','తెలుగు']];
+const EN={
+  SEARCH_PH:"Search assets, users, IOCs, alerts, incidents…",
+  COP_PH:"Ask anything — investigate, summarize, hunt…",
+  COP_TITLE:"Cyber Defense Copilot",
+  CLAUDE_MON:"Claude AI is monitoring this module",
+  CSS1:"Ask anything about ", CSS2:" — answers are grounded in the live data on screen.",
+  COP_INTRO:"Hi — I'm <b>Claude</b>, your Cyber Defense Copilot. I'm wired into every CyberShield module — SOC, Threat Hunting, Vulnerability Management, IAM, Cloud and the rest — and I read the live telemetry of whatever view you're in. Ask me to investigate, hunt, prioritize, summarize, or generate detections."
+};
+const DICT={
+ ar:{
+  SEARCH_PH:"ابحث في الأصول والمستخدمين والمؤشرات والتنبيهات والحوادث…",
+  COP_PH:"اسأل أي شيء — تحقيق، تلخيص، اصطياد…",
+  COP_TITLE:"مساعد الدفاع السيبراني",
+  CLAUDE_MON:"كلود AI يراقب هذه الوحدة",
+  CSS1:"اسأل أي شيء عن ", CSS2:" — الإجابات مبنية على البيانات الحية على الشاشة.",
+  COP_INTRO:"مرحبًا — أنا <b>كلود</b>، مساعد الدفاع السيبراني. أنا متصل بكل وحدات CyberShield — SOC، اصطياد التهديدات، إدارة الثغرات، IAM، السحابة وغيرها — وأقرأ البيانات الحية لأي شاشة تعمل عليها. اطلب مني التحقيق أو الاصطياد أو تحديد الأولويات أو التلخيص أو إنشاء قواعد الاكتشاف.",
+  "view":"عرض","Cyber Risk":"المخاطر السيبرانية","Ask Claude":"اسأل كلود","Powered by Claude":"مدعوم بكلود",
+  "Command":"القيادة","Defense Layers":"طبقات الدفاع","Intelligence &amp; Risk":"الاستخبارات والمخاطر","Governance":"الحوكمة",
+  "Cyber Defense Dashboard":"لوحة الدفاع السيبراني","SOC Operations":"عمليات مركز العمليات الأمنية","Incidents &amp; Cases":"الحوادث والقضايا","Threat Hunting":"اصطياد التهديدات",
+  "Network Defense":"دفاع الشبكة","Identity &amp; Access":"الهوية والوصول","Application Security":"أمن التطبيقات","Endpoint &amp; Server":"الأجهزة الطرفية والخوادم","Cloud Security":"أمن السحابة",
+  "Threat Intelligence":"استخبارات التهديدات","Vulnerability Mgmt":"إدارة الثغرات","Detection Engineering":"هندسة الاكتشاف","SOAR &amp; Automation":"SOAR والأتمتة",
+  "Compliance &amp; GRC":"الامتثال والحوكمة","Reports":"التقارير","Architecture &amp; Data Model":"البنية ونموذج البيانات","Roles &amp; Access (RBAC)":"الأدوار والوصول (RBAC)",
+  "CISO / Executive":"رئيس أمن المعلومات / الإدارة","SOC Manager":"مدير مركز العمليات الأمنية","SOC Analyst L1":"محلل SOC المستوى 1","SOC Analyst L2/L3":"محلل SOC المستوى 2/3","Threat Hunter":"صائد التهديدات",
+  "IAM / PAM Analyst":"محلل إدارة الهوية والوصول المتميز","Network Security Eng":"مهندس أمن الشبكات","AppSec Engineer":"مهندس أمن التطبيقات","Cloud Security Eng":"مهندس أمن السحابة","Compliance / GRC":"الامتثال / الحوكمة",
+  "Enterprise Cyber Risk Posture":"وضع المخاطر السيبرانية للمؤسسة","Board &amp; executive view — business impact, top risks, compliance health, investment":"عرض مجلس الإدارة والتنفيذيين — التأثير على الأعمال، أبرز المخاطر، صحة الامتثال، الاستثمار",
+  "Enterprise Cyber Defense Dashboard":"لوحة الدفاع السيبراني للمؤسسة","Unified posture across all defense layers — live telemetry":"وضع موحّد عبر جميع طبقات الدفاع — بيانات حية",
+  "Alert triage, queue health, analyst productivity &amp; SLAs":"فرز التنبيهات وصحة الطابور وإنتاجية المحلل واتفاقيات مستوى الخدمة",
+  "Incidents &amp; Case Management":"إدارة الحوادث والقضايا","Alert to incident lifecycle: timeline, business impact, containment, closure":"دورة الحياة من التنبيه إلى الحادثة: الجدول الزمني، التأثير، الاحتواء، الإغلاق",
+  "Threat Hunting Workbench":"منصة اصطياد التهديدات","Hypothesis-driven hunting · NL to query · MITRE coverage · notebooks":"اصطياد قائم على الفرضيات · تحويل اللغة الطبيعية إلى استعلام · تغطية MITRE · دفاتر",
+  "Identity &amp; Access Threat Defense":"دفاع تهديدات الهوية والوصول","UEBA, privileged access, account risk &amp; identity attack paths":"UEBA، الوصول المتميز، مخاطر الحسابات ومسارات هجمات الهوية",
+  "Network Threat Defense":"دفاع تهديدات الشبكة","Firewall, IDS/IPS, DNS, proxy, VPN, east-west &amp; C2 detection":"جدار الحماية، IDS/IPS، DNS، الوكيل، VPN، حركة شرق-غرب واكتشاف C2",
+  "Application Security Defense":"دفاع أمن التطبيقات","WAF, API abuse, OWASP Top 10, runtime &amp; secure-code risk":"WAF، إساءة استخدام API، OWASP Top 10، مخاطر وقت التشغيل والشيفرة الآمنة",
+  "Endpoint &amp; Server Threat Defense":"دفاع تهديدات الأجهزة الطرفية والخوادم","EDR, malware, ransomware behavior, process chains &amp; isolation":"EDR، البرمجيات الخبيثة، سلوك الفدية، سلاسل العمليات والعزل",
+  "Cloud Security Defense":"دفاع أمن السحابة","CSPM/CWPP across AWS, Azure, GCP, OCI · containers &amp; Kubernetes":"CSPM/CWPP عبر AWS وAzure وGCP وOCI · الحاويات وKubernetes",
+  "IOC feeds, actor profiling, TTP mapping &amp; intel to detection":"موجزات المؤشرات، تحليل الجهات، ربط TTP وتحويل الاستخبارات إلى اكتشاف",
+  "Vulnerability &amp; Exposure Management":"إدارة الثغرات والتعرض","Risk-based prioritization: asset value, exploitability &amp; exposure":"ترتيب الأولويات حسب المخاطر: قيمة الأصل وقابلية الاستغلال والتعرض",
+  "Rule library, Sigma/KQL/SPL, lifecycle, tuning &amp; MITRE gap analysis":"مكتبة القواعد، Sigma/KQL/SPL، دورة الحياة، الضبط وتحليل فجوات MITRE",
+  "Playbooks with tiered automation: recommend to approve to auto-respond":"كتيبات تشغيل بأتمتة متدرجة: التوصية ثم الموافقة ثم الاستجابة الآلية",
+  "Compliance &amp; Governance":"الامتثال والحوكمة","Control mapping, evidence, audit readiness &amp; regulatory reporting":"ربط الضوابط والأدلة وجاهزية التدقيق والتقارير التنظيمية",
+  "Templated reports — each with purpose, audience, metrics, findings, risk, impact, recommendations, owners, due dates":"تقارير جاهزة — لكل منها الغرض والجمهور والمقاييس والنتائج والمخاطر والتأثير والتوصيات والمسؤولون وتواريخ الاستحقاق",
+  "Architecture &amp; Enterprise Data Model":"البنية ونموذج بيانات المؤسسة","Reference architecture, data flow &amp; core entities":"البنية المرجعية وتدفق البيانات والكيانات الأساسية",
+  "Roles &amp; Access Control (RBAC)":"التحكم في الأدوار والوصول (RBAC)","13 enterprise roles · least-privilege permission matrix":"13 دورًا مؤسسيًا · مصفوفة صلاحيات بأقل امتياز",
+  "Active Critical Incidents":"الحوادث الحرجة النشطة","Business at Risk":"الأعمال المعرضة للخطر","Compliance Health":"صحة الامتثال","Identity Risk":"مخاطر الهوية","Cloud Risk":"مخاطر السحابة",
+  "Open Critical Vulns":"ثغرات حرجة مفتوحة","Threat Hunt Coverage":"تغطية اصطياد التهديدات","Active Critical":"حرجة نشطة","Open High-Risk Vulns":"ثغرات عالية الخطورة مفتوحة","Hunt Coverage":"تغطية الاصطياد",
+  "Open Alerts":"تنبيهات مفتوحة","Critical":"حرجة","SLA Breaches":"خروقات اتفاقية الخدمة","False Positive":"إيجابيات كاذبة",
+  "Enterprise":"المؤسسة","Identity":"الهوية","Network":"الشبكة","Application":"التطبيقات","Cloud":"السحابة","Endpoint":"الأجهزة الطرفية",
+  "Open Incidents":"حوادث مفتوحة","In Containment":"قيد الاحتواء","Active Hunts":"عمليات اصطياد نشطة","Detection Gaps":"فجوات الاكتشاف","Misconfigurations":"إعدادات خاطئة","Public Exposures":"تعرض عام",
+  "Daily SOC Operations Report":"تقرير عمليات SOC اليومي","Weekly Threat Hunting Report":"تقرير اصطياد التهديدات الأسبوعي","Monthly Cyber Risk Report":"تقرير المخاطر السيبرانية الشهري","Executive Cyber Posture Report":"تقرير الوضع السيبراني التنفيذي",
+  "Incident Closure Report":"تقرير إغلاق الحادثة","Vulnerability Risk Report":"تقرير مخاطر الثغرات","IAM Risk Report":"تقرير مخاطر إدارة الهوية والوصول","Cloud Security Report":"تقرير أمن السحابة",
+  "Application Security Report":"تقرير أمن التطبيقات","Compliance Evidence Report":"تقرير أدلة الامتثال","Board Cybersecurity Report":"تقرير الأمن السيبراني لمجلس الإدارة",
+  "grounded in":"مبني على","Claude is analyzing":"كلود يحلل","telemetry":"بيانات",
+  "Generate report":"إنشاء تقرير","Generate":"إنشاء","Audience":"الجمهور","Key metrics":"المقاييس الرئيسية","Standard Report Structure":"هيكل التقرير القياسي",
+  "Daily":"يومي","Weekly":"أسبوعي","Monthly":"شهري","Per incident":"لكل حادثة","On demand":"عند الطلب","Quarterly":"ربع سنوي",
+  "Purpose":"الغرض","Findings":"النتائج","Risk rating":"تصنيف المخاطر","Business impact":"التأثير على الأعمال","Recommendations":"التوصيات","Action owners":"مسؤولو الإجراءات","Due dates":"تواريخ الاستحقاق",
+  "Hunt Lead / CISO":"قائد الاصطياد / CISO","CISO / Risk Committee":"CISO / لجنة المخاطر","Executive Mgmt":"الإدارة التنفيذية","IR / Stakeholders":"الاستجابة للحوادث / أصحاب المصلحة","IT / Asset owners":"تقنية المعلومات / مالكو الأصول","IAM / PAM":"إدارة الهوية / الوصول المتميز","Cloud / CISO":"السحابة / CISO","AppSec / Dev":"أمن التطبيقات / التطوير","GRC / Auditors":"الحوكمة / المدققون","Board":"مجلس الإدارة",
+  "Alerts, MTTD/MTTR, queue, SLA breaches":"التنبيهات، MTTD/MTTR، الطابور، خروقات اتفاقية الخدمة",
+  "Hunts, findings, MITRE coverage, gaps":"عمليات الاصطياد، النتائج، تغطية MITRE، الفجوات",
+  "Risk score trend, top risks, treatment":"اتجاه درجة المخاطر، أبرز المخاطر، المعالجة",
+  "Posture, incidents, compliance, investment":"الوضع، الحوادث، الامتثال، الاستثمار",
+  "Timeline, impact, RCA, lessons learned":"الجدول الزمني، التأثير، تحليل السبب الجذري، الدروس المستفادة",
+  "Risk-ranked vulns, SLA, remediation":"ثغرات مرتبة حسب المخاطر، اتفاقية الخدمة، المعالجة",
+  "Privileged access, MFA, dormant, reviews":"الوصول المتميز، المصادقة متعددة العوامل، الحسابات الخاملة، المراجعات",
+  "Misconfig, exposure, IAM, compliance":"الإعدادات الخاطئة، التعرض، إدارة الهوية، الامتثال",
+  "OWASP, WAF, vulns, code issues":"OWASP، WAF، الثغرات، مشاكل الشيفرة",
+  "Control status, evidence, gaps, exceptions":"حالة الضوابط، الأدلة، الفجوات، الاستثناءات",
+  "Posture, business risk, peer benchmark":"الوضع، مخاطر الأعمال، المقارنة المرجعية"
+ },
+ te:{
+  SEARCH_PH:"అసెట్‌లు, యూజర్లు, IOCలు, అలర్ట్‌లు, ఘటనలను శోధించండి…",
+  COP_PH:"ఏదైనా అడగండి — విచారణ, సారాంశం, హంట్…",
+  COP_TITLE:"సైబర్ డిఫెన్స్ కోపైలట్",
+  CLAUDE_MON:"క్లాడ్ AI ఈ మాడ్యూల్‌ను పర్యవేక్షిస్తోంది",
+  CSS1:"దీని గురించి ఏదైనా అడగండి: ", CSS2:" — సమాధానాలు స్క్రీన్‌పై లైవ్ డేటా ఆధారంగా ఉంటాయి.",
+  COP_INTRO:"హాయ్ — నేను <b>క్లాడ్</b>, మీ సైబర్ డిఫెన్స్ కోపైలట్. నేను ప్రతి CyberShield మాడ్యూల్‌తో — SOC, థ్రెట్ హంటింగ్, వల్నరబిలిటీ నిర్వహణ, IAM, క్లౌడ్ మరియు మిగతావి — అనుసంధానించబడ్డాను మరియు మీరు ఉన్న వ్యూ యొక్క లైవ్ టెలిమెట్రీని చదువుతాను. విచారణ, హంట్, ప్రాధాన్యత, సారాంశం లేదా డిటెక్షన్‌లు రూపొందించమని నన్ను అడగండి.",
+  "view":"వ్యూ","Cyber Risk":"సైబర్ రిస్క్","Ask Claude":"క్లాడ్‌ను అడగండి","Powered by Claude":"క్లాడ్ ద్వారా",
+  "Command":"కమాండ్","Defense Layers":"రక్షణ పొరలు","Intelligence &amp; Risk":"ఇంటెలిజెన్స్ & రిస్క్","Governance":"గవర్నెన్స్",
+  "Cyber Defense Dashboard":"సైబర్ డిఫెన్స్ డాష్‌బోర్డ్","SOC Operations":"SOC కార్యకలాపాలు","Incidents &amp; Cases":"ఘటనలు & కేసులు","Threat Hunting":"థ్రెట్ హంటింగ్",
+  "Network Defense":"నెట్‌వర్క్ డిఫెన్స్","Identity &amp; Access":"ఐడెంటిటీ & యాక్సెస్","Application Security":"అప్లికేషన్ సెక్యూరిటీ","Endpoint &amp; Server":"ఎండ్‌పాయింట్ & సర్వర్","Cloud Security":"క్లౌడ్ సెక్యూరిటీ",
+  "Threat Intelligence":"థ్రెట్ ఇంటెలిజెన్స్","Vulnerability Mgmt":"వల్నరబిలిటీ నిర్వహణ","Detection Engineering":"డిటెక్షన్ ఇంజినీరింగ్","SOAR &amp; Automation":"SOAR & ఆటోమేషన్",
+  "Compliance &amp; GRC":"కంప్లయన్స్ & GRC","Reports":"రిపోర్ట్‌లు","Architecture &amp; Data Model":"ఆర్కిటెక్చర్ & డేటా మోడల్","Roles &amp; Access (RBAC)":"రోల్స్ & యాక్సెస్ (RBAC)",
+  "CISO / Executive":"CISO / ఎగ్జిక్యూటివ్","SOC Manager":"SOC మేనేజర్","SOC Analyst L1":"SOC విశ్లేషకుడు L1","SOC Analyst L2/L3":"SOC విశ్లేషకుడు L2/L3","Threat Hunter":"థ్రెట్ హంటర్",
+  "IAM / PAM Analyst":"IAM / PAM విశ్లేషకుడు","Network Security Eng":"నెట్‌వర్క్ సెక్యూరిటీ ఇంజినీర్","AppSec Engineer":"AppSec ఇంజినీర్","Cloud Security Eng":"క్లౌడ్ సెక్యూరిటీ ఇంజినీర్","Compliance / GRC":"కంప్లయన్స్ / GRC",
+  "Enterprise Cyber Risk Posture":"ఎంటర్‌ప్రైజ్ సైబర్ రిస్క్ పొజిషన్","Board &amp; executive view — business impact, top risks, compliance health, investment":"బోర్డ్ & ఎగ్జిక్యూటివ్ వ్యూ — వ్యాపార ప్రభావం, ప్రధాన రిస్క్‌లు, కంప్లయన్స్ ఆరోగ్యం, పెట్టుబడి",
+  "Enterprise Cyber Defense Dashboard":"ఎంటర్‌ప్రైజ్ సైబర్ డిఫెన్స్ డాష్‌బోర్డ్","Unified posture across all defense layers — live telemetry":"అన్ని రక్షణ పొరల్లో ఏకీకృత స్థితి — లైవ్ టెలిమెట్రీ",
+  "Alert triage, queue health, analyst productivity &amp; SLAs":"అలర్ట్ ట్రయాజ్, క్యూ ఆరోగ్యం, విశ్లేషకుల ఉత్పాదకత & SLAలు",
+  "Incidents &amp; Case Management":"ఘటనలు & కేస్ నిర్వహణ","Alert to incident lifecycle: timeline, business impact, containment, closure":"అలర్ట్ నుండి ఘటన లైఫ్‌సైకిల్: టైమ్‌లైన్, వ్యాపార ప్రభావం, నియంత్రణ, ముగింపు",
+  "Threat Hunting Workbench":"థ్రెట్ హంటింగ్ వర్క్‌బెంచ్","Hypothesis-driven hunting · NL to query · MITRE coverage · notebooks":"హైపోథెసిస్ ఆధారిత హంటింగ్ · NL నుండి క్వెరీ · MITRE కవరేజ్ · నోట్‌బుక్‌లు",
+  "Identity &amp; Access Threat Defense":"ఐడెంటిటీ & యాక్సెస్ థ్రెట్ డిఫెన్స్","UEBA, privileged access, account risk &amp; identity attack paths":"UEBA, ప్రివిలేజ్డ్ యాక్సెస్, ఖాతా రిస్క్ & ఐడెంటిటీ అటాక్ పాత్‌లు",
+  "Network Threat Defense":"నెట్‌వర్క్ థ్రెట్ డిఫెన్స్","Firewall, IDS/IPS, DNS, proxy, VPN, east-west &amp; C2 detection":"ఫైర్‌వాల్, IDS/IPS, DNS, ప్రాక్సీ, VPN, ఈస్ట్-వెస్ట్ & C2 డిటెక్షన్",
+  "Application Security Defense":"అప్లికేషన్ సెక్యూరిటీ డిఫెన్స్","WAF, API abuse, OWASP Top 10, runtime &amp; secure-code risk":"WAF, API దుర్వినియోగం, OWASP Top 10, రన్‌టైమ్ & సెక్యూర్-కోడ్ రిస్క్",
+  "Endpoint &amp; Server Threat Defense":"ఎండ్‌పాయింట్ & సర్వర్ థ్రెట్ డిఫెన్స్","EDR, malware, ransomware behavior, process chains &amp; isolation":"EDR, మాల్‌వేర్, ransomware ప్రవర్తన, ప్రాసెస్ చైన్‌లు & ఐసొలేషన్",
+  "Cloud Security Defense":"క్లౌడ్ సెక్యూరిటీ డిఫెన్స్","CSPM/CWPP across AWS, Azure, GCP, OCI · containers &amp; Kubernetes":"AWS, Azure, GCP, OCI అంతటా CSPM/CWPP · కంటైనర్లు & Kubernetes",
+  "IOC feeds, actor profiling, TTP mapping &amp; intel to detection":"IOC ఫీడ్‌లు, యాక్టర్ ప్రొఫైలింగ్, TTP మ్యాపింగ్ & ఇంటెల్ నుండి డిటెక్షన్",
+  "Vulnerability &amp; Exposure Management":"వల్నరబిలిటీ & ఎక్స్‌పోజర్ నిర్వహణ","Risk-based prioritization: asset value, exploitability &amp; exposure":"రిస్క్ ఆధారిత ప్రాధాన్యత: అసెట్ విలువ, ఎక్స్‌ప్లాయిటబిలిటీ & ఎక్స్‌పోజర్",
+  "Rule library, Sigma/KQL/SPL, lifecycle, tuning &amp; MITRE gap analysis":"రూల్ లైబ్రరీ, Sigma/KQL/SPL, లైఫ్‌సైకిల్, ట్యూనింగ్ & MITRE గ్యాప్ విశ్లేషణ",
+  "Playbooks with tiered automation: recommend to approve to auto-respond":"శ్రేణీకృత ఆటోమేషన్‌తో ప్లేబుక్‌లు: సిఫారసు, ఆమోదం, ఆటో-రెస్పాన్స్",
+  "Compliance &amp; Governance":"కంప్లయన్స్ & గవర్నెన్స్","Control mapping, evidence, audit readiness &amp; regulatory reporting":"కంట్రోల్ మ్యాపింగ్, సాక్ష్యం, ఆడిట్ సంసిద్ధత & రెగ్యులేటరీ రిపోర్టింగ్",
+  "Templated reports — each with purpose, audience, metrics, findings, risk, impact, recommendations, owners, due dates":"టెంప్లేట్ రిపోర్ట్‌లు — ప్రతి దానికి ప్రయోజనం, ప్రేక్షకులు, మెట్రిక్‌లు, ఫలితాలు, రిస్క్, ప్రభావం, సిఫారసులు, యజమానులు, గడువు తేదీలు",
+  "Architecture &amp; Enterprise Data Model":"ఆర్కిటెక్చర్ & ఎంటర్‌ప్రైజ్ డేటా మోడల్","Reference architecture, data flow &amp; core entities":"రిఫరెన్స్ ఆర్కిటెక్చర్, డేటా ఫ్లో & కోర్ ఎంటిటీలు",
+  "Roles &amp; Access Control (RBAC)":"రోల్స్ & యాక్సెస్ కంట్రోల్ (RBAC)","13 enterprise roles · least-privilege permission matrix":"13 ఎంటర్‌ప్రైజ్ రోల్స్ · లీస్ట్-ప్రివిలేజ్ పర్మిషన్ మ్యాట్రిక్స్",
+  "Active Critical Incidents":"యాక్టివ్ క్రిటికల్ ఘటనలు","Business at Risk":"రిస్క్‌లో ఉన్న వ్యాపారం","Compliance Health":"కంప్లయన్స్ ఆరోగ్యం","Identity Risk":"ఐడెంటిటీ రిస్క్","Cloud Risk":"క్లౌడ్ రిస్క్",
+  "Open Critical Vulns":"ఓపెన్ క్రిటికల్ వల్న్‌లు","Threat Hunt Coverage":"థ్రెట్ హంట్ కవరేజ్","Active Critical":"యాక్టివ్ క్రిటికల్","Open High-Risk Vulns":"ఓపెన్ హై-రిస్క్ వల్న్‌లు","Hunt Coverage":"హంట్ కవరేజ్",
+  "Open Alerts":"ఓపెన్ అలర్ట్‌లు","Critical":"క్రిటికల్","SLA Breaches":"SLA ఉల్లంఘనలు","False Positive":"ఫాల్స్ పాజిటివ్",
+  "Enterprise":"ఎంటర్‌ప్రైజ్","Identity":"ఐడెంటిటీ","Network":"నెట్‌వర్క్","Application":"అప్లికేషన్","Cloud":"క్లౌడ్","Endpoint":"ఎండ్‌పాయింట్",
+  "Open Incidents":"ఓపెన్ ఘటనలు","In Containment":"నియంత్రణలో","Active Hunts":"యాక్టివ్ హంట్‌లు","Detection Gaps":"డిటెక్షన్ గ్యాప్‌లు","Misconfigurations":"తప్పు కాన్ఫిగరేషన్‌లు","Public Exposures":"పబ్లిక్ ఎక్స్‌పోజర్‌లు",
+  "Daily SOC Operations Report":"డైలీ SOC ఆపరేషన్స్ రిపోర్ట్","Weekly Threat Hunting Report":"వీక్లీ థ్రెట్ హంటింగ్ రిపోర్ట్","Monthly Cyber Risk Report":"మంత్లీ సైబర్ రిస్క్ రిపోర్ట్","Executive Cyber Posture Report":"ఎగ్జిక్యూటివ్ సైబర్ పొజిషన్ రిపోర్ట్",
+  "Incident Closure Report":"ఇన్సిడెంట్ క్లోజర్ రిపోర్ట్","Vulnerability Risk Report":"వల్నరబిలిటీ రిస్క్ రిపోర్ట్","IAM Risk Report":"IAM రిస్క్ రిపోర్ట్","Cloud Security Report":"క్లౌడ్ సెక్యూరిటీ రిపోర్ట్",
+  "Application Security Report":"అప్లికేషన్ సెక్యూరిటీ రిపోర్ట్","Compliance Evidence Report":"కంప్లయన్స్ ఎవిడెన్స్ రిపోర్ట్","Board Cybersecurity Report":"బోర్డ్ సైబర్‌సెక్యూరిటీ రిపోర్ట్",
+  "grounded in":"ఆధారంగా","Claude is analyzing":"క్లాడ్ విశ్లేషిస్తోంది","telemetry":"టెలిమెట్రీ",
+  "Generate report":"రిపోర్ట్ రూపొందించు","Generate":"రూపొందించు","Audience":"ప్రేక్షకులు","Key metrics":"ముఖ్య మెట్రిక్‌లు","Standard Report Structure":"స్టాండర్డ్ రిపోర్ట్ నిర్మాణం",
+  "Daily":"రోజువారీ","Weekly":"వారానికి","Monthly":"నెలవారీ","Per incident":"ప్రతి ఘటనకు","On demand":"అవసరమైనప్పుడు","Quarterly":"త్రైమాసిక",
+  "Purpose":"ప్రయోజనం","Findings":"ఫలితాలు","Risk rating":"రిస్క్ రేటింగ్","Business impact":"వ్యాపార ప్రభావం","Recommendations":"సిఫారసులు","Action owners":"యాక్షన్ ఓనర్లు","Due dates":"గడువు తేదీలు",
+  "Hunt Lead / CISO":"హంట్ లీడ్ / CISO","CISO / Risk Committee":"CISO / రిస్క్ కమిటీ","Executive Mgmt":"ఎగ్జిక్యూటివ్ మేనేజ్‌మెంట్","IR / Stakeholders":"IR / స్టేక్‌హోల్డర్లు","IT / Asset owners":"IT / అసెట్ ఓనర్లు","IAM / PAM":"IAM / PAM","Cloud / CISO":"క్లౌడ్ / CISO","AppSec / Dev":"AppSec / డెవ్","GRC / Auditors":"GRC / ఆడిటర్లు","Board":"బోర్డ్",
+  "Alerts, MTTD/MTTR, queue, SLA breaches":"అలర్ట్‌లు, MTTD/MTTR, క్యూ, SLA ఉల్లంఘనలు",
+  "Hunts, findings, MITRE coverage, gaps":"హంట్‌లు, ఫలితాలు, MITRE కవరేజ్, గ్యాప్‌లు",
+  "Risk score trend, top risks, treatment":"రిస్క్ స్కోర్ ట్రెండ్, ప్రధాన రిస్క్‌లు, ట్రీట్‌మెంట్",
+  "Posture, incidents, compliance, investment":"స్థితి, ఘటనలు, కంప్లయన్స్, పెట్టుబడి",
+  "Timeline, impact, RCA, lessons learned":"టైమ్‌లైన్, ప్రభావం, RCA, నేర్చుకున్న పాఠాలు",
+  "Risk-ranked vulns, SLA, remediation":"రిస్క్-ర్యాంక్డ్ వల్న్‌లు, SLA, రెమిడియేషన్",
+  "Privileged access, MFA, dormant, reviews":"ప్రివిలేజ్డ్ యాక్సెస్, MFA, డార్మంట్, రివ్యూలు",
+  "Misconfig, exposure, IAM, compliance":"తప్పు కాన్ఫిగ్, ఎక్స్‌పోజర్, IAM, కంప్లయన్స్",
+  "OWASP, WAF, vulns, code issues":"OWASP, WAF, వల్న్‌లు, కోడ్ సమస్యలు",
+  "Control status, evidence, gaps, exceptions":"కంట్రోల్ స్థితి, సాక్ష్యం, గ్యాప్‌లు, మినహాయింపులు",
+  "Posture, business risk, peer benchmark":"స్థితి, వ్యాపార రిస్క్, పీర్ బెంచ్‌మార్క్"
+ }
+};
+function tr(s){ if(state.lang!=='en' && DICT[state.lang] && DICT[state.lang][s]!=null) return DICT[state.lang][s]; if(EN[s]!=null) return EN[s]; return s; }
+function rebuildRoleSelect(){ const rs=document.getElementById('roleSelect'); if(!rs)return; rs.innerHTML=Object.keys(ROLES).map(k=>'<option value="'+k+'">'+tr(ROLES[k].name)+'</option>').join(''); rs.value=state.role; }
+function initLang(){ const ls=document.getElementById('langSelect'); ls.innerHTML=LANGS.map(([k,n])=>'<option value="'+k+'">'+n+'</option>').join(''); ls.value=state.lang; ls.onchange=(e)=>setLang(e.target.value); }
+function setLang(l){ state.lang=l; applyLang(); buildNav(); rebuildRoleSelect(); render(); }
+function applyLang(){
+  const rtl=state.lang==='ar';
+  document.documentElement.setAttribute('dir', rtl?'rtl':'ltr');
+  document.documentElement.setAttribute('lang', state.lang);
+  var el;
+  if((el=document.getElementById('globalSearch'))) el.setAttribute('placeholder', tr('SEARCH_PH'));
+  if((el=document.getElementById('riskLab'))) el.textContent=tr('Cyber Risk');
+  if((el=document.getElementById('askClaudeBtn'))) el.innerHTML='&#10024; '+tr('Ask Claude');
+  if((el=document.getElementById('copInput'))) el.setAttribute('placeholder', tr('COP_PH'));
+  if((el=document.getElementById('copTitle'))) el.textContent=tr('COP_TITLE');
+}
+
+const NAV = [
+  ['Command', [
+    ['dashboard','&#9672;','Cyber Defense Dashboard'],
+    ['soc','&#9636;','SOC Operations', 142,'amber'],
+    ['incidents','&#9670;','Incidents &amp; Cases', 7,''],
+    ['hunt','&#9673;','Threat Hunting'],
+  ]],
+  ['Defense Layers', [
+    ['network','&#8644;','Network Defense', 23,'amber'],
+    ['iam','&#9680;','Identity &amp; Access', 11,'amber'],
+    ['appsec','&#10094;&#10095;','Application Security'],
+    ['endpoint','&#9635;','Endpoint &amp; Server', 4,''],
+    ['cloud','&#9729;','Cloud Security', 9,'amber'],
+  ]],
+  ['Intelligence &amp; Risk', [
+    ['ti','&#9678;','Threat Intelligence'],
+    ['vuln','&#9888;','Vulnerability Mgmt', 318,'blue'],
+    ['detect','&#8862;','Detection Engineering'],
+    ['soar','&#9881;','SOAR &amp; Automation'],
+  ]],
+  ['Governance', [
+    ['compliance','&#9638;','Compliance &amp; GRC'],
+    ['reports','&#9637;','Reports'],
+    ['architecture','&#9671;','Architecture &amp; Data Model'],
+    ['admin','&#9919;','Roles &amp; Access (RBAC)'],
+  ]],
+];
+
+const ALERTS = [
+  {id:'AL-4821',sev:'crit',t:'12:41',name:'Encoded PowerShell + LSASS access on FIN-WS-204',src:'CrowdStrike',entity:'j.okoro',asset:'FIN-WS-204',mitre:['T1059.001','T1003.001'],score:96,status:'Open'},
+  {id:'AL-4818',sev:'crit',t:'12:38',name:'Impossible travel — admin login Riyadh to Kyiv in 22m',src:'Entra ID',entity:'svc-backup',asset:'AzureAD',mitre:['T1078','T1133'],score:94,status:'Triage'},
+  {id:'AL-4810',sev:'high',t:'12:19',name:'DNS tunneling pattern to news-cdn[.]live',src:'Sentinel',entity:'MKT-WS-77',asset:'MKT-WS-77',mitre:['T1071.004','T1048'],score:88,status:'Open'},
+  {id:'AL-4803',sev:'high',t:'11:54',name:'Public S3 bucket exposed — prod-customer-exports',src:'Wiz CSPM',entity:'aws-prod',asset:'s3://prod-customer-exports',mitre:['T1530'],score:84,status:'Open'},
+  {id:'AL-4799',sev:'high',t:'11:40',name:'WAF blocked SQLi burst (412 reqs) on /api/orders',src:'F5 WAF',entity:'45.146.x.x',asset:'orders-api',mitre:['T1190'],score:81,status:'Triage'},
+  {id:'AL-4790',sev:'med',t:'11:12',name:'MFA fatigue — 18 push denials then accept',src:'Okta',entity:'a.haddad',asset:'Okta',mitre:['T1621'],score:67,status:'Open'},
+  {id:'AL-4781',sev:'med',t:'10:48',name:'New IAM access key created + used in 90s',src:'AWS CloudTrail',entity:'ci-deployer',asset:'aws-prod',mitre:['T1098.001'],score:63,status:'Open'},
+  {id:'AL-4770',sev:'med',t:'10:21',name:'Lateral movement SMB 445 — 6 hosts from HR-WS-12',src:'Defender',entity:'HR-WS-12',asset:'HR-WS-12',mitre:['T1021.002'],score:71,status:'Open'},
+  {id:'AL-4762',sev:'low',t:'09:58',name:'Unapproved SaaS — file sync to personal Dropbox',src:'Netskope',entity:'r.mensah',asset:'proxy',mitre:['T1567.002'],score:38,status:'Open'},
+  {id:'AL-4755',sev:'low',t:'09:33',name:'Port scan from 10.40.2.9 across /24',src:'Palo Alto',entity:'10.40.2.9',asset:'core-fw',mitre:['T1046'],score:34,status:'Closed'},
+];
+const INCIDENTS = [
+  {id:'INC-2026-0412',sev:'crit',title:'Suspected ransomware staging — FIN segment',cat:'Ransomware',owner:'L3 · M. Reyes',sla:'02:14 left',status:'Containment',assets:6,risk:96,mitre:['T1486','T1059.001','T1003.001','T1021.002']},
+  {id:'INC-2026-0411',sev:'crit',title:'Privileged account takeover — svc-backup',cat:'Account Compromise',owner:'IAM · L. Chen',sla:'00:48 left',status:'Investigation',assets:3,risk:93,mitre:['T1078','T1098']},
+  {id:'INC-2026-0409',sev:'high',title:'Customer data exposure — public S3 bucket',cat:'Data Leakage',owner:'Cloud · K. Patel',sla:'05:30 left',status:'Eradication',assets:1,risk:84,mitre:['T1530']},
+  {id:'INC-2026-0405',sev:'high',title:'Credential stuffing on customer portal',cat:'Application Attack',owner:'AppSec · D. Silva',sla:'08:10 left',status:'Investigation',assets:2,risk:79,mitre:['T1110.004']},
+  {id:'INC-2026-0401',sev:'med',title:'Phishing campaign — 34 recipients, 3 clicks',cat:'Phishing',owner:'L1 · A. Noor',sla:'12:00 left',status:'Triage',assets:34,risk:61,mitre:['T1566.002']},
+  {id:'INC-2026-0398',sev:'med',title:'Insider — bulk export from CRM',cat:'Insider Threat',owner:'L2 · S. Vega',sla:'1d left',status:'Investigation',assets:1,risk:58,mitre:['T1213']},
+  {id:'INC-2026-0394',sev:'low',title:'DNS anomaly — beaconing to parked domain',cat:'Network Intrusion',owner:'Net · T. Yusuf',sla:'2d left',status:'Monitoring',assets:1,risk:41,mitre:['T1071.004']},
+];
+const HUNTS = [
+  {id:'HUNT-088',title:'PowerShell used for lateral movement off-hours',type:'Hypothesis',status:'Active',progress:62,mitre:'T1059.001 / T1021',findings:3,owner:'M. Reyes'},
+  {id:'HUNT-086',title:'DNS tunneling for low-and-slow exfiltration',type:'Behavior',status:'Active',progress:41,mitre:'T1071.004',findings:1,owner:'S. Vega'},
+  {id:'HUNT-084',title:'Cloud IAM role assumption chains to privesc',type:'Intel-led',status:'Active',progress:28,mitre:'T1098 / T1548',findings:0,owner:'K. Patel'},
+  {id:'HUNT-081',title:'APT-Sandworm TTPs vs current detections',type:'Campaign',status:'Review',progress:90,mitre:'12 techniques',findings:5,owner:'M. Reyes'},
+  {id:'HUNT-079',title:'Service accounts authenticating interactively',type:'Anomaly',status:'Closed',progress:100,mitre:'T1078.004',findings:2,owner:'L. Chen'},
+];
+const RISKY_ASSETS = [
+  ['FIN-WS-204','Finance workstation',96,'Active malware + cred access'],
+  ['s3://prod-customer-exports','Cloud storage',91,'Public exposure · PII'],
+  ['orders-api','Customer-facing API',86,'12 SQLi attempts · 2 CVEs'],
+  ['DC-RIY-01','Domain Controller',83,'Unpatched ZeroLogon-class CVE'],
+  ['VPN-GW-02','VPN gateway',80,'CVE-2024-3400 · internet-facing'],
+  ['MKT-WS-77','Workstation',77,'DNS tunneling beacon'],
+  ['k8s-prod-dash','Kubernetes dashboard',74,'Exposed · no auth'],
+  ['HR-WS-12','Workstation',71,'Lateral movement source'],
+  ['jump-box-03','Bastion host',68,'Excessive standing privilege'],
+  ['CRM-APP-01','SaaS app',64,'Bulk export anomaly'],
+];
+const RISKY_USERS = [
+  ['svc-backup','Service account',95,'Impossible travel · takeover'],
+  ['j.okoro','Finance analyst',91,'Host compromised · LSASS'],
+  ['a.haddad','Sys admin',82,'MFA fatigue accepted'],
+  ['ci-deployer','Service account',78,'New key used immediately'],
+  ['r.mensah','Marketing',66,'Shadow-IT exfil pattern'],
+  ['l.ferro','Contractor',61,'Dormant to reactivated'],
+  ['admin-global','Break-glass',58,'Used outside change window'],
+  ['s.vega','DBA',52,'Excessive prod permissions'],
+];
+const TECH_ACTIVE = [
+  ['T1059.001','PowerShell',41],['T1078','Valid Accounts',33],['T1071.004','DNS C2',27],
+  ['T1003.001','LSASS Dump',19],['T1110.004','Cred Stuffing',17],['T1021.002','SMB/Admin Shares',14],
+  ['T1530','Cloud Storage',12],['T1190','Exploit Public App',11],['T1566.002','Spearphish Link',9],['T1098','Account Manip',7],
+];
+const COMPLIANCE = [
+  ['ISO 27001:2022',93,114,7,'Certified'],['NIST CSF 2.0',88,106,12,'On track'],
+  ['CIS Controls v8',84,153,18,'On track'],['SOC 2 Type II',91,64,5,'Audit Q3'],
+  ['PCI DSS 4.0',79,278,22,'Gap remediation'],['GDPR',86,'—',4,'Compliant'],
+  ['NCA ECC-2',82,114,14,'KSA · On track'],['SAMA CSF',77,97,19,'KSA · Gap remediation'],
+];
+const VULNS = [
+  ['CVE-2024-3400','PAN-OS GlobalProtect RCE','crit',10.0,'Yes · ITW','VPN-GW-02','Internet-facing','Net Eng','24h'],
+  ['CVE-2024-21412','Defender SmartScreen bypass','high',8.1,'Yes','42 endpoints','Internal','Endpoint','7d'],
+  ['CVE-2020-1472','ZeroLogon (Netlogon)','crit',10.0,'Yes · ITW','DC-RIY-01','Internal·critical','AD Team','24h'],
+  ['CVE-2023-34362','MOVEit SQLi','crit',9.8,'Yes · ITW','file-transfer-01','Internet-facing','AppSec','48h'],
+  ['CVE-2024-23897','Jenkins arbitrary file read','high',9.8,'PoC','ci-jenkins','Internal','DevOps','7d'],
+];
+
+const $ = (s)=>document.querySelector(s);
+const sevClass = {crit:'t-crit',high:'t-high',med:'t-med',low:'t-low',good:'t-good',info:'t-info'};
+const sevColor = {crit:'var(--crit)',high:'var(--high)',med:'var(--med)',low:'var(--low)',good:'var(--good)'};
+const sevName = {crit:'Critical',high:'High',med:'Medium',low:'Low'};
+function sevTag(s){return '<span class="tag '+sevClass[s]+'">'+(sevName[s]||s)+'</span>'}
+function barColor(v){return v>=90?'var(--crit)':v>=70?'var(--high)':v>=40?'var(--med)':'var(--low)'}
+function scoreCell(v){return '<div class="scoreboard"><div class="bar" style="width:64px"><i style="width:'+v+'%;background:'+barColor(v)+'"></i></div><b style="color:'+barColor(v)+'">'+v+'</b></div>'}
+function mitrePills(arr){return arr.map(m=>'<span class="tag t-purple mono" style="font-size:10px">'+m+'</span>').join(' ')}
+function initials(s){return s.replace(/[^a-zA-Z]/g,'').slice(0,2).toUpperCase()}
+let charts = [];
+function destroyCharts(){charts.forEach(c=>{try{c.destroy()}catch(e){}});charts=[]}
+
+function buildNav(){
+  let h='';
+  NAV.forEach(([grp,items])=>{
+    h+='<div class="nav-grp">'+tr(grp)+'</div>';
+    items.forEach(([id,ico,label,badge,cls])=>{
+      h+='<div class="nav-item '+(state.module===id?'active':'')+'" onclick="go(\''+id+'\')">'
+        +'<span class="ico">'+ico+'</span><span>'+tr(label)+'</span>'
+        +(badge?'<span class="badge '+(cls||'')+'">'+badge+'</span>':'')+'</div>';
+    });
+  });
+  $('#nav').innerHTML=h;
+}
+function go(mod){ state.module=mod; buildNav(); render(); $('#main').scrollTop=0; }
+function setRole(r){ state.role=r; state.module=ROLES[r].home; buildNav(); render(); }
+function toggleTheme(){
+  state.theme = state.theme==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme', state.theme==='light'?'light':'');
+  $('#themeBtn').innerHTML = state.theme==='dark'?'&#9728;&#65039;':'&#127769;';
+  render();
+}
+
+function render(){
+  destroyCharts();
+  const r = ROLES[state.role];
+  const fn = RENDER[state.module] || (()=>'<div class="empty">Module coming soon.</div>');
+  $('#main').innerHTML = '<div class="fade-in">'+fn(r)+'</div>';
+  if(window._afterRender){const cbs=window._afterRender;window._afterRender=null;cbs.forEach(f=>f())}
+  if(typeof refreshCopChips==='function') refreshCopChips();
+}
+function after(fn){ (window._afterRender=window._afterRender||[]).push(fn) }
+function head(title,sub,actions){
+  return '<div class="page-head"><div>'
+    +'<div class="role-tag">'+tr(ROLES[state.role].name)+' '+tr('view')+'</div>'
+    +'<h1>'+tr(title)+'</h1><div class="sub">'+tr(sub)+'</div></div>'
+    +'<div class="flex wrap">'+(actions||'')+'</div></div>';
+}
+function ring(val){
+  const c=2*Math.PI*46, off=c*(1-val/100), col=barColor(val);
+  return '<div class="ring"><svg width="108" height="108">'
+    +'<circle cx="54" cy="54" r="46" stroke="var(--line)" stroke-width="10" fill="none"/>'
+    +'<circle cx="54" cy="54" r="46" stroke="'+col+'" stroke-width="10" fill="none"'
+    +' stroke-dasharray="'+c+'" stroke-dashoffset="'+off+'" stroke-linecap="round"/></svg>'
+    +'<div class="lbl"><div><b style="color:'+col+'">'+val+'</b><span>/ 100</span></div></div></div>';
+}
+
+const RENDER = {};
+
+RENDER.dashboard = (r)=>{
+  if(r.view==='exec') return execDash();
+  return socMgrDash();
+};
+function kpi(lab,val,delta,dir,icon,col){
+  return '<div class="card kpi"><div class="spark">'+icon+'</div>'
+    +'<div class="lab">'+tr(lab)+'</div><div class="val" '+(col?'style="color:'+col+'"':'')+'>'+val+'</div>'
+    +'<div class="delta '+dir+'">'+delta+'</div></div>';
+}
+function execDash(){
+  after(()=>{ trendChart('trend'); donutChart('mix'); });
+  return head('Enterprise Cyber Risk Posture','Board &amp; executive view — business impact, top risks, compliance health, investment',
+    '<button class="btn" onclick="go(\'reports\')">Board Report</button><button class="btn primary" onclick="openCopilot(\'Generate a board-level cyber posture summary for this quarter.\')">&#10024; Brief me</button>')
+  + '<div class="grid g4" style="margin-bottom:16px">'
+    +'<div class="card" style="text-align:center">'+ring(78)+'<div class="muted tiny" style="margin-top:8px">Enterprise Cyber Risk — <b style="color:var(--high)">HIGH</b></div></div>'
+    +kpi('Active Critical Incidents','3','+1 vs last week','up','&#9670;','var(--crit)')
+    +kpi('Business at Risk','$42.8M','Exposure if top risks realized','flat','&#9672;','var(--high)')
+    +kpi('Compliance Health','86%','+4% QoQ','down','&#9638;','var(--good)')
+  +'</div>'
+  +'<div class="grid g4" style="margin-bottom:16px">'
+    +kpi('Identity Risk','72','3 takeovers blocked','flat','&#9680;','var(--high)')
+    +kpi('Cloud Risk','69','9 misconfigs open','flat','&#9729;','var(--med)')
+    +kpi('Open Critical Vulns','38','12 internet-facing','up','&#9888;','var(--crit)')
+    +kpi('Threat Hunt Coverage','81%','of MITRE ATT&CK','down','&#9673;','var(--good)')
+  +'</div>'
+  +'<div class="grid g3">'
+    +'<div class="card col-2"><h3>90-Day Cyber Risk &amp; Incident Trend <span class="more" onclick="go(\'reports\')">View report &rarr;</span></h3><div class="chart-wrap"><canvas id="trend"></canvas></div></div>'
+    +'<div class="card"><h3>Risk by Domain</h3><div class="chart-wrap"><canvas id="mix"></canvas></div></div>'
+  +'</div>'
+  +'<div class="grid g2" style="margin-top:16px">'
+    +'<div class="card"><h3>Top Enterprise Risks (Board)</h3>'+topRisksTable()+'</div>'
+    +'<div class="card"><h3>Investment Justification</h3>'+investTable()+'</div>'
+  +'</div>';
+}
+function topRisksTable(){
+  const rows=[
+    ['Ransomware exposure in Finance segment','crit','$18.2M','Immediate'],
+    ['Internet-facing unpatched VPN (CVE-2024-3400)','crit','$9.4M','24h SLA'],
+    ['Customer PII in public cloud storage','high','$7.1M','In remediation'],
+    ['Privileged identity sprawl / standing access','high','$5.0M','PAM rollout'],
+    ['Third-party / supply-chain detection gaps','med','$3.1M','Q3 program'],
+  ];
+  return '<table><thead><tr><th>Risk</th><th>Sev</th><th>Impact</th><th>Status</th></tr></thead><tbody>'
+  +rows.map(([n,s,i,st])=>'<tr class="row"><td>'+n+'</td><td>'+sevTag(s)+'</td><td><b>'+i+'</b></td><td class="muted tiny">'+st+'</td></tr>').join('')
+  +'</tbody></table>';
+}
+function investTable(){
+  const rows=[
+    ['PAM / least-privilege program','$1.2M','-31% identity risk','High'],
+    ['Cloud CNAPP expansion','$680K','-24% cloud risk','High'],
+    ['24x7 MDR + hunt team','$1.9M','-40% dwell time','Critical'],
+    ['Email security + DLP uplift','$420K','-55% phishing impact','Medium'],
+  ];
+  return '<table><thead><tr><th>Initiative</th><th>Cost</th><th>Risk Reduction</th><th>Priority</th></tr></thead><tbody>'
+  +rows.map(([n,c,rr,p])=>'<tr class="row"><td>'+n+'</td><td><b>'+c+'</b></td><td class="down">'+rr+'</td><td>'+sevTag(p.toLowerCase()==='critical'?'crit':p.toLowerCase()==='high'?'high':'med')+'</td></tr>').join('')
+  +'</tbody></table><div class="note" style="margin-top:12px">AI estimate: prioritized portfolio reduces enterprise risk score <b>78 &rarr; 61</b> over 2 quarters (~$24M avoided expected loss).</div>';
+}
+
+function socMgrDash(){
+  after(()=>{ alertTrend('atrend'); domainBars('dbars'); });
+  return head('Enterprise Cyber Defense Dashboard','Unified posture across all defense layers — live telemetry',
+    '<button class="btn" onclick="go(\'hunt\')">Hunts</button><button class="btn" onclick="go(\'incidents\')">Incidents</button><button class="btn primary" onclick="openCopilot()">&#10024; Copilot</button>')
+  + '<div class="grid g6" style="margin-bottom:16px">'
+    +miniScore('Enterprise',78,'high')+miniScore('Identity',72,'high')+miniScore('Network',64,'med')
+    +miniScore('Application',58,'med')+miniScore('Cloud',69,'med')+miniScore('Endpoint',47,'med')
+  +'</div>'
+  +'<div class="grid g4" style="margin-bottom:16px">'
+    +kpi('Active Critical','3','2 in containment','up','&#9670;','var(--crit)')
+    +kpi('Open High-Risk Vulns','38','12 internet-facing','up','&#9888;','var(--high)')
+    +kpi('Compliance Health','86%','+4% QoQ','down','&#9638;','var(--good)')
+    +kpi('Hunt Coverage','81%','MITRE ATT&CK','flat','&#9673;','var(--accent2)')
+  +'</div>'
+  +'<div class="grid g3" style="margin-bottom:16px">'
+    +'<div class="card col-2"><h3>Alert Volume &amp; Severity (24h) <span class="more" onclick="go(\'soc\')">SOC ops &rarr;</span></h3><div class="chart-wrap"><canvas id="atrend"></canvas></div></div>'
+    +'<div class="card"><h3>Risk by Defense Layer</h3><div class="chart-wrap"><canvas id="dbars"></canvas></div></div>'
+  +'</div>'
+  +'<div class="grid g3">'
+    +'<div class="card"><h3>Top 10 Risky Assets <span class="more linkish" onclick="go(\'vuln\')">all &rarr;</span></h3>'+listTable(RISKY_ASSETS,'asset')+'</div>'
+    +'<div class="card"><h3>Top 10 Risky Users <span class="more linkish" onclick="go(\'iam\')">all &rarr;</span></h3>'+listTable(RISKY_USERS,'user')+'</div>'
+    +'<div class="card"><h3>Top Active Attack Techniques <span class="more linkish" onclick="go(\'hunt\')">matrix &rarr;</span></h3>'+techTable()+'</div>'
+  +'</div>';
+}
+function miniScore(lab,v,s){
+  return '<div class="card" style="padding:13px;text-align:center"><div class="lab tiny muted" style="text-transform:uppercase;letter-spacing:.5px;font-weight:700">'+tr(lab)+'</div>'
+    +'<div style="font-size:26px;font-weight:800;color:'+sevColor[s]+';margin:4px 0 6px">'+v+'</div>'
+    +'<div class="bar"><i style="width:'+v+'%;background:'+sevColor[s]+'"></i></div></div>';
+}
+function listTable(data,kind){
+  return '<table><tbody>'+data.slice(0,10).map(([n,d,sc,reason])=>
+    '<tr class="row" onclick="'+(kind==='user'?'openEntity(\''+n+'\',\'user\')':'openEntity(\''+n+'\',\'asset\')')+'">'
+    +'<td><div style="font-weight:600">'+n+'</div><div class="tiny muted">'+d+' · '+reason+'</div></td>'
+    +'<td style="width:80px;text-align:right">'+scoreCell(+sc)+'</td></tr>').join('')+'</tbody></table>';
+}
+function techTable(){
+  return '<table><tbody>'+TECH_ACTIVE.map(([id,nm,ct])=>
+    '<tr class="row" onclick="go(\'hunt\')"><td><span class="tag t-purple mono" style="font-size:10px">'+id+'</span> '+nm+'</td>'
+    +'<td style="width:90px"><div class="bar"><i style="width:'+(ct*2.4)+'%;background:var(--purple)"></i></div></td>'
+    +'<td style="width:34px;text-align:right"><b>'+ct+'</b></td></tr>').join('')+'</tbody></table>';
+}
+
+RENDER.soc = ()=>{
+  after(()=>{ alertTrend('socTrend'); fpChart('fpc'); });
+  return head('SOC Operations','Alert triage, queue health, analyst productivity &amp; SLAs',
+    '<button class="btn sm">Export</button><button class="btn primary sm" onclick="openCopilot(\'Which 5 alerts should I triage first and why?\')">&#10024; Ask Claude</button>')
+  + claudeStrip()
+  + '<div class="grid g6" style="margin-bottom:16px">'
+    +kpi('Open Alerts','142','+18 / hr','up','&#9636;','var(--high)')
+    +kpi('Critical','7','needs L3','up','&#9670;','var(--crit)')
+    +kpi('MTTD','4.2m','-1.1m','down','&#9201;','var(--good)')
+    +kpi('MTTR','38m','-6m','down','&#9201;','var(--good)')
+    +kpi('SLA Breaches','2','this shift','up','&#9888;','var(--high)')
+    +kpi('False Positive','11%','-3%','down','&#9676;','var(--good)')
+  +'</div>'
+  +'<div class="grid g3" style="margin-bottom:16px">'
+    +'<div class="card col-2"><h3>Alert Pipeline (24h)</h3><div class="chart-wrap"><canvas id="socTrend"></canvas></div></div>'
+    +'<div class="card"><h3>Detection Quality</h3><div class="chart-wrap sm"><canvas id="fpc"></canvas></div>'
+    +'<div class="legend"><span><i class="dot-s" style="background:var(--good)"></i>True positive 73%</span><span><i class="dot-s" style="background:var(--warn)"></i>Benign-true 16%</span><span><i class="dot-s" style="background:var(--bad)"></i>False+ 11%</span></div></div>'
+  +'</div>'
+  +'<div class="card"><h3>Live Alert Triage Queue <span class="more">Click any alert &rarr; evidence · risk · MITRE · recommended response</span></h3>'+alertTable()+'</div>'
+  +'<div class="grid g2" style="margin-top:16px">'
+    +'<div class="card"><h3>Analyst Workload</h3>'+analystTable()+'</div>'
+    +'<div class="card"><h3>Detection Coverage by Tactic</h3>'+coverageList()+'</div>'
+  +'</div>';
+};
+function alertTable(){
+  return '<table><thead><tr><th>Time</th><th>Sev</th><th>Risk</th><th>Alert</th><th>Entity</th><th>MITRE</th><th>Source</th><th>Status</th></tr></thead><tbody>'
+  +ALERTS.map(a=>'<tr class="row" onclick="openAlert(\''+a.id+'\')">'
+    +'<td class="mono tiny">'+a.t+'</td><td>'+sevTag(a.sev)+'</td><td>'+scoreCell(a.score)+'</td>'
+    +'<td style="max-width:280px">'+a.name+'</td><td><span class="mono tiny">'+a.entity+'</span></td>'
+    +'<td>'+mitrePills(a.mitre.slice(0,2))+'</td><td class="tiny muted">'+a.src+'</td>'
+    +'<td><span class="tag '+(a.status==='Closed'?'t-good':a.status==='Triage'?'t-med':'t-info')+'">'+a.status+'</span></td></tr>').join('')
+  +'</tbody></table>';
+}
+function analystTable(){
+  const a=[['A. Noor','L1',14,'92%','Phishing triage'],['S. Vega','L2',8,'88%','Insider case'],
+    ['M. Reyes','L3',5,'95%','Ransomware INC-0412'],['L. Chen','IAM',6,'90%','Account takeover'],['T. Yusuf','Net',9,'84%','DNS beacon hunt']];
+  return '<table><thead><tr><th>Analyst</th><th>Tier</th><th>Active</th><th>Close rate</th><th>Focus</th></tr></thead><tbody>'
+  +a.map(([n,t,c,cr,f])=>'<tr class="row"><td><span class="avatar">'+initials(n)+'</span> '+n+'</td><td class="muted">'+t+'</td><td><b>'+c+'</b></td><td class="down">'+cr+'</td><td class="tiny muted">'+f+'</td></tr>').join('')
+  +'</tbody></table>';
+}
+function coverageList(){
+  const c=[['Initial Access',88],['Execution',92],['Persistence',74],['Privilege Escalation',68],['Defense Evasion',61],['Credential Access',83],['Lateral Movement',79],['Exfiltration',71],['Command & Control',85],['Impact',77]];
+  return '<div class="plist">'+c.map(([n,v])=>'<div class="prow"><span class="nm">'+n+'</span>'
+    +'<div class="bar" style="flex:1"><i style="width:'+v+'%;background:'+(v>=80?'var(--good)':v>=65?'var(--med)':'var(--high)')+'"></i></div>'
+    +'<span class="pc">'+v+'%</span></div>').join('')+'</div>';
+}
+
+RENDER.incidents = ()=>{
+  return head('Incidents &amp; Case Management','Alert to incident lifecycle: timeline, business impact, containment, closure',
+    '<button class="btn sm" onclick="go(\'soar\')">Playbooks</button><button class="btn primary sm" onclick="alert(\'New incident form (demo)\')">+ New Incident</button>')
+  + '<div class="grid g4" style="margin-bottom:16px">'
+    +kpi('Open Incidents','7','2 critical','up','&#9670;','var(--high)')
+    +kpi('In Containment','2','ransomware + ATO','flat','&#9635;','var(--crit)')
+    +kpi('Avg Time to Contain','1h 12m','-18m','down','&#9201;','var(--good)')
+    +kpi('SLA at Risk','2','&lt;1h remaining','up','&#9888;','var(--high)')
+  +'</div>'
+  +'<div class="card"><h3>Active Incident Cases <span class="more">Click for full case: timeline · MITRE kill chain · evidence · closure report</span></h3>'
+  +'<table><thead><tr><th>ID</th><th>Sev</th><th>Incident</th><th>Category</th><th>Risk</th><th>Owner</th><th>Stage</th><th>SLA</th></tr></thead><tbody>'
+  +INCIDENTS.map(i=>'<tr class="row" onclick="openIncident(\''+i.id+'\')">'
+    +'<td class="mono tiny">'+i.id+'</td><td>'+sevTag(i.sev)+'</td><td style="max-width:260px">'+i.title+'</td>'
+    +'<td class="tiny muted">'+i.cat+'</td><td>'+scoreCell(i.risk)+'</td><td class="tiny">'+i.owner+'</td>'
+    +'<td><span class="tag t-info">'+i.status+'</span></td>'
+    +'<td class="tiny '+(i.sla.startsWith('0')?'up':'muted')+'">'+i.sla+'</td></tr>').join('')
+  +'</tbody></table></div>'
+  +'<div class="grid g2" style="margin-top:16px">'
+    +'<div class="card"><h3>Incidents by Category (30d)</h3>'+catBars()+'</div>'
+    +'<div class="card"><h3>Incident Lifecycle Stages</h3>'
+    +'<div class="flow">'+['Alert','Triage','Investigation','Containment','Eradication','Recovery','Lessons Learned','Closure'].map((s,i,a)=>'<span class="node">'+s+'</span>'+(i<a.length-1?'<span class="arr">&rarr;</span>':'')).join('')+'</div>'
+    +'<div class="note" style="margin-top:14px">Every incident carries: <b>timeline</b>, <b>business impact</b>, <b>containment actions</b>, <b>root cause</b>, and an auto-generated <b>closure report</b>. AI drafts the executive summary and maps the kill chain.</div></div>'
+  +'</div>';
+};
+function catBars(){
+  const c=[['Phishing',14,'med'],['Malware',9,'high'],['Account Compromise',7,'crit'],['Data Leakage',5,'high'],['Network Intrusion',6,'med'],['Insider Threat',3,'med'],['Cloud Compromise',4,'high'],['Ransomware',2,'crit']];
+  const mx=14;
+  return '<div class="plist">'+c.map(([n,v,s])=>'<div class="prow"><span class="nm">'+n+'</span>'
+    +'<div class="bar" style="flex:1"><i style="width:'+(v/mx*100)+'%;background:'+sevColor[s]+'"></i></div><span class="pc">'+v+'</span></div>').join('')+'</div>';
+}
+
+RENDER.hunt = ()=>{
+  after(()=>{ buildMitre(); });
+  return head('Threat Hunting Workbench','Hypothesis-driven hunting · NL to query · MITRE coverage · notebooks',
+    '<button class="btn sm" onclick="openHuntBuilder()">+ New Hunt</button><button class="btn primary sm" onclick="openCopilot(\'Suggest 3 threat hunt hypotheses based on current telemetry and active techniques.\')">&#10024; Ask Claude</button>')
+  + claudeStrip()
+  + '<div class="grid g4" style="margin-bottom:16px">'
+    +kpi('Active Hunts','4','+1 today','flat','&#9673;','var(--accent2)')
+    +kpi('Findings (open)','9','3 to incidents','up','&#9670;','var(--high)')
+    +kpi('MITRE Coverage','81%','+5% this month','down','&#9638;','var(--good)')
+    +kpi('Detection Gaps','12','techniques uncovered','flat','&#8862;','var(--med)')
+  +'</div>'
+  +'<div class="grid g3" style="margin-bottom:16px">'
+    +'<div class="card col-2"><h3>Hunt Hypothesis Builder <span class="more">Hypothesis · Data sources · Query · Findings · Outcome</span></h3>'
+    +'<div class="kv" style="margin-bottom:12px">'
+      +'<div class="k">Hypothesis</div><div><b>"Adversary may use PowerShell for lateral movement to privileged hosts off-hours."</b></div>'
+      +'<div class="k">Hunt type</div><div><span class="tag t-purple">Hypothesis-driven</span> <span class="tag t-info">Behavior</span></div>'
+      +'<div class="k">MITRE</div><div>'+mitrePills(['T1059.001','T1021.002','T1078'])+'</div>'
+      +'<div class="k">Data sources</div><div class="tiny muted">EDR process events · Windows 4688/4624 · Sysmon 1/3 · AD auth logs</div>'
+    +'</div>'
+    +'<div class="flex between" style="margin-bottom:6px"><span class="sec-title" style="margin:0">Generated KQL (AI · natural-language)</span><span class="tag t-good">validated</span></div>'
+    +'<div class="codeblk"><span class="hl-f">DeviceProcessEvents</span>\n| <span class="hl-k">where</span> Timestamp &gt; ago(7d)\n| <span class="hl-k">where</span> FileName <span class="hl-k">in~</span> (<span class="hl-s">"powershell.exe","pwsh.exe"</span>)\n| <span class="hl-k">where</span> ProcessCommandLine <span class="hl-k">has_any</span> (<span class="hl-s">"-enc","FromBase64","IEX","-nop"</span>)\n| <span class="hl-k">where</span> hourofday(Timestamp) !between (6 .. 19)\n| <span class="hl-k">join kind=inner</span> (IdentityLogonEvents | <span class="hl-k">where</span> AccountUpn <span class="hl-k">has</span> <span class="hl-s">"adm-"</span>) <span class="hl-k">on</span> DeviceName\n| <span class="hl-k">summarize</span> hosts=dcount(DeviceName) <span class="hl-k">by</span> AccountUpn\n| <span class="hl-k">where</span> hosts &gt;= 3</div>'
+    +'<div class="flex wrap" style="margin-top:12px"><button class="btn primary sm" onclick="alert(\'Running hunt against Sentinel + Defender (demo)\')">Run hunt</button>'
+    +'<button class="btn sm">Save template</button><button class="btn sm" onclick="openCopilot(\'Convert this KQL to Splunk SPL.\')">Convert SPL/SQL</button>'
+    +'<button class="btn sm">+ Add to notebook</button></div>'
+    +'</div>'
+    +'<div class="card"><h3>Hunt Findings</h3>'
+    +'<div class="stepper">'
+    +[['3 hosts matched off-hours PS','adm-reyes &rarr; FIN-WS-204/207/211','crit'],['Encoded cmd downloaded payload','news-cdn[.]live (C2)','high'],['Promote to incident','&rarr; INC-2026-0412','med']].map((f,i)=>'<div class="step"><div class="n">'+(i+1)+'</div><div class="ct"><b>'+f[0]+'</b><p>'+f[1]+' '+sevTag(f[2])+'</p></div></div>').join('')
+    +'</div>'
+    +'<button class="btn primary sm" style="margin-top:12px;width:100%" onclick="openCopilot(\'Generate a hunt closure report for HUNT-088.\')">&#10024; Generate hunt report</button>'
+    +'</div>'
+  +'</div>'
+  +'<div class="card" style="margin-bottom:16px"><h3>MITRE ATT&CK Coverage Matrix <span class="more">Heat = detections + active alerts · click a technique to hunt</span></h3>'
+    +'<div id="mitreMatrix" style="overflow-x:auto"></div>'
+    +'<div class="legend"><span><i class="dot-s" style="background:rgba(59,130,246,.6)"></i>Detection in place</span><span><i class="dot-s" style="background:rgba(234,179,8,.7)"></i>Active alert</span><span><i class="dot-s" style="background:rgba(239,68,68,.8)"></i>In current incident</span><span><i class="dot-s" style="background:var(--bg3)"></i>Coverage gap</span></div>'
+  +'</div>'
+  +'<div class="grid g2">'
+    +'<div class="card"><h3>Active &amp; Recent Hunts</h3>'
+    +'<table><thead><tr><th>ID</th><th>Hypothesis</th><th>Type</th><th>Progress</th><th>Finds</th><th>Status</th></tr></thead><tbody>'
+    +HUNTS.map(h=>'<tr class="row"><td class="mono tiny">'+h.id+'</td><td style="max-width:230px">'+h.title+'</td>'
+    +'<td><span class="tag t-info">'+h.type+'</span></td>'
+    +'<td><div class="bar" style="width:70px"><i style="width:'+h.progress+'%;background:var(--accent2)"></i></div></td>'
+    +'<td><b>'+h.findings+'</b></td><td><span class="tag '+(h.status==='Closed'?'t-good':h.status==='Review'?'t-med':'t-purple')+'">'+h.status+'</span></td></tr>').join('')
+    +'</tbody></table></div>'
+    +'<div class="card"><h3>IOC &amp; Intel Search · Hunt Library</h3>'
+    +'<div class="search" style="max-width:none;margin-bottom:12px">&#128269; <input placeholder="Search IOC, hash, domain, IP, YARA/Sigma rule…" /></div>'
+    +'<div class="sec-title">Saved hunt templates</div>'
+    +'<div class="pill-row" style="margin-bottom:14px">'+['DNS tunneling','Beaconing detection','Golden ticket','OAuth consent abuse','Cloud key abuse','Living-off-the-land','Impossible travel','Ransomware canary'].map(t=>'<span class="chip" onclick="openCopilot(\'Build a hunt for '+t+'.\')">'+t+'</span>').join('')+'</div>'
+    +'<div class="sec-title">Hunt methodologies</div>'
+    +'<div class="pill-row">'+['Hypothesis-based','IOC-based','Behavior-based','Intelligence-led','Anomaly-based','Campaign-based'].map(t=>'<span class="tag t-purple">'+t+'</span>').join(' ')+'</div>'
+    +'</div>'
+  +'</div>';
+};
+
+RENDER.iam = ()=>{
+  after(()=>{ loginChart('loginc'); });
+  return layerHead('Identity &amp; Access Threat Defense','UEBA, privileged access, account risk &amp; identity attack paths',
+    ['User risk scoring','Account takeover prediction','Toxic combination detection','Identity attack path analysis'])
+  + '<div class="grid g4" style="margin-bottom:16px">'
+    +kpi('Identity Risk Score','72','3 ATOs blocked','flat','&#9680;','var(--high)')
+    +kpi('Privileged Accounts','248','19 over-privileged','flat','&#9919;','var(--med)')
+    +kpi('MFA Gaps','11','high-risk users','up','&#9676;','var(--high)')
+    +kpi('Dormant Accounts','37','2 reactivated','up','&#9677;','var(--med)')
+  +'</div>'
+  +'<div class="grid g3" style="margin-bottom:16px">'
+    +'<div class="card col-2"><h3>Failed Login &amp; Anomaly Trend (7d)</h3><div class="chart-wrap"><canvas id="loginc"></canvas></div></div>'
+    +'<div class="card"><h3>Identity Risk Signals</h3>'+signalList([['Impossible travel',5,'crit'],['MFA fatigue accepted',3,'crit'],['Brute force attempts',22,'high'],['Privilege escalation',4,'high'],['Service acct interactive',6,'med'],['Orphaned accounts',8,'med'],['Excessive permissions',19,'med']])+'</div>'
+  +'</div>'
+  +'<div class="card" style="margin-bottom:16px"><h3>High-Risk Identities <span class="more">UEBA · risk score · attack path</span></h3>'
+    +'<table><thead><tr><th>Identity</th><th>Type</th><th>Risk</th><th>Privilege</th><th>Top signal</th><th>Action</th></tr></thead><tbody>'
+    +RISKY_USERS.map(([n,t,sc,r])=>'<tr class="row" onclick="openEntity(\''+n+'\',\'user\')"><td><span class="avatar">'+initials(n)+'</span> <b>'+n+'</b></td>'
+    +'<td class="muted tiny">'+t+'</td><td>'+scoreCell(+sc)+'</td><td>'+(t.indexOf('Service')>=0?'<span class="tag t-med">Service</span>':+sc>80?'<span class="tag t-high">Privileged</span>':'<span class="tag t-info">Standard</span>')+'</td>'
+    +'<td class="tiny muted">'+r+'</td><td><button class="btn sm" onclick="event.stopPropagation();openCopilot(\'Recommend response for risky identity '+n+'.\')">Respond</button></td></tr>').join('')
+    +'</tbody></table></div>'
+  +useCaseCard('IAM Use Cases',['Brute force login attempt','Compromised privileged account','Suspicious admin activity','Login from unusual country','Disabled MFA for high-risk user','Service account misuse','Privilege escalation']);
+};
+
+RENDER.network = ()=>{
+  after(()=>{ trafficChart('trafc'); });
+  return layerHead('Network Threat Defense','Firewall, IDS/IPS, DNS, proxy, VPN, east-west &amp; C2 detection',
+    ['Beaconing detection','Abnormal traffic patterns','Shadow-IT discovery','Firewall rule recommendations'])
+  + '<div class="grid g4" style="margin-bottom:16px">'
+    +kpi('Network Threat Score','64','C2 + lateral movement','flat','&#8644;','var(--med)')
+    +kpi('Blocked Connections','48.2K','24h','down','&#9940;','var(--good)')
+    +kpi('C2 Indicators','3','active beacons','up','&#9678;','var(--crit)')
+    +kpi('Lateral Movement','2','SMB/RDP chains','up','&rarr;','var(--high)')
+  +'</div>'
+  +'<div class="grid g3" style="margin-bottom:16px">'
+    +'<div class="card col-2"><h3>Traffic Volume &amp; Threat Events (24h)</h3><div class="chart-wrap"><canvas id="trafc"></canvas></div></div>'
+    +'<div class="card"><h3>Top Blocked Sources</h3>'+signalList([['45.146.x.x (RU)',412,'high'],['185.220.x.x (Tor)',88,'med'],['10.40.2.9 (port scan)',64,'med'],['news-cdn[.]live (C2)',27,'crit'],['91.219.x.x (CN)',19,'med']],'mono')+'</div>'
+  +'</div>'
+  +'<div class="grid g2" style="margin-bottom:16px">'
+    +'<div class="card"><h3>Suspicious Network Behaviors</h3>'
+    +'<table><tbody>'
+    +[['DNS tunneling to news-cdn[.]live','MKT-WS-77','crit','T1071.004'],['SMB lateral 445 across 6 hosts','HR-WS-12','high','T1021.002'],['Beaconing 60s jitter to parked domain','10.20.1.44','high','T1071'],['Large outbound transfer 8.4GB','FIN-WS-204','high','T1048'],['Repeated VPN failed logins (RU)','vpn-gw-02','med','T1110'],['Unapproved remote access (TeamViewer)','OPS-WS-31','med','T1219']].map(([n,h,s,m])=>'<tr class="row" onclick="openCopilot(\'Investigate network event: '+n+'\')"><td>'+n+'<div class="tiny muted mono">'+h+'</div></td><td>'+sevTag(s)+'</td><td>'+mitrePills([m])+'</td></tr>').join('')
+    +'</tbody></table></div>'
+    +'<div class="card"><h3>Zero Trust &amp; Segmentation Risk</h3>'
+    +'<div class="plist">'+[['ZTNA policy coverage',76],['Microsegmentation (prod)',82],['East-west visibility',69],['Unmanaged device blocking',58],['DNS security enforcement',88]].map(([n,v])=>'<div class="prow"><span class="nm">'+n+'</span><div class="bar" style="flex:1"><i style="width:'+v+'%;background:'+(v>=80?'var(--good)':v>=65?'var(--med)':'var(--high)')+'"></i></div><span class="pc">'+v+'%</span></div>').join('')+'</div>'
+    +'<div class="note" style="margin-top:12px">AI flagged <b>4 over-permissive firewall rules</b> allowing any-to-any on the management VLAN. <span class="linkish" onclick="openCopilot(\'Recommend firewall rule changes for the management VLAN exposure.\')">Get recommended changes &rarr;</span></div>'
+    +'</div></div>'
+  +useCaseCard('Network Use Cases',['Suspicious outbound traffic','Repeated failed VPN login','Unusual data transfer','Internal lateral movement','DNS tunneling','Unapproved remote access']);
+};
+
+RENDER.appsec = ()=>{
+  return layerHead('Application Security Defense','WAF, API abuse, OWASP Top 10, runtime &amp; secure-code risk',
+    ['Abnormal API behavior','Exploitable vuln prioritization','Business logic abuse','Developer-friendly explanations'])
+  + '<div class="grid g4" style="margin-bottom:16px">'
+    +kpi('App Threat Score','58','SQLi + cred stuffing','flat','&#10094;&#10095;','var(--med)')
+    +kpi('WAF Attacks (24h)','1,284','412 SQLi blocked','up','&#128737;','var(--high)')
+    +kpi('Critical App Vulns','14','3 internet-facing','flat','&#9888;','var(--crit)')
+    +kpi('APIs Monitored','206','12 unauthenticated','flat','&#9671;','var(--med)')
+  +'</div>'
+  +'<div class="grid g2" style="margin-bottom:16px">'
+    +'<div class="card"><h3>OWASP Top 10 — Risk Exposure</h3>'
+    +'<div class="plist">'+[['A01 Broken Access Control',74,'high'],['A02 Cryptographic Failures',41,'med'],['A03 Injection',88,'crit'],['A04 Insecure Design',52,'med'],['A05 Security Misconfiguration',63,'med'],['A06 Vulnerable Components',79,'high'],['A07 Auth Failures',71,'high'],['A08 Integrity Failures',38,'low'],['A09 Logging Failures',45,'med'],['A10 SSRF',56,'med']].map(([n,v,s])=>'<div class="prow"><span class="nm">'+n+'</span><div class="bar" style="flex:1"><i style="width:'+v+'%;background:'+sevColor[s]+'"></i></div><span class="pc">'+v+'</span></div>').join('')+'</div></div>'
+    +'<div class="card"><h3>Live Application Attacks</h3>'
+    +'<table><tbody>'+[['SQL injection burst on /api/orders','412 reqs · blocked','crit','T1190'],['Credential stuffing on /login','9.2K attempts','high','T1110.004'],['XSS attempt in profile field','blocked','med','T1059.007'],['API key abuse to rate spike','svc token leaked','high','T1552'],['Broken auth — IDOR /api/users/{id}','data access','high','A01'],['App-layer DDoS pattern','/search','med','T1499']].map(([n,d,s,m])=>'<tr class="row" onclick="openCopilot(\'Explain and triage application attack: '+n+'\')"><td>'+n+'<div class="tiny muted">'+d+'</div></td><td>'+sevTag(s)+'</td><td>'+mitrePills([m])+'</td></tr>').join('')+'</tbody></table></div>'
+  +'</div>'
+  +'<div class="grid g2" style="margin-bottom:16px">'
+    +'<div class="card"><h3>Secure-Code &amp; Pipeline Findings</h3>'
+    +'<table><thead><tr><th>Repo / Scan</th><th>Tool</th><th>Critical</th><th>High</th><th>Status</th></tr></thead><tbody>'
+    +[['orders-service','Checkmarx SAST',2,9,'In sprint'],['payments-api','Veracode',1,4,'Blocked'],['web-frontend','GH Adv Security',0,6,'Triaged'],['auth-lib','SonarQube',3,2,'Critical'],['mobile-bff','Snyk SCA',1,11,'Backlog']].map(([r,t,c,h,s])=>'<tr class="row"><td class="mono tiny">'+r+'</td><td class="muted tiny">'+t+'</td><td><b style="color:var(--crit)">'+c+'</b></td><td><b style="color:var(--high)">'+h+'</b></td><td><span class="tag '+(s==='Critical'||s==='Blocked'?'t-high':'t-info')+'">'+s+'</span></td></tr>').join('')
+    +'</tbody></table></div>'
+    +'<div class="card"><h3>API Inventory &amp; Abuse Detection</h3>'
+    +signalList([['Unauthenticated endpoints',12,'high'],['Deprecated API versions',7,'med'],['Excessive data exposure',4,'high'],['Missing rate limiting',9,'med'],['Shadow APIs discovered',3,'med']])
+    +'<div class="note" style="margin-top:12px">AI prioritized <b>CVE-2023-34362 (MOVEit SQLi)</b> as #1 — internet-facing, exploit in the wild, processes PII. <span class="linkish" onclick="go(\'vuln\')">Open in Vuln Mgmt &rarr;</span></div></div>'
+  +'</div>'
+  +useCaseCard('AppSec Use Cases',['SQL injection attempt','Cross-site scripting','API abuse','Broken authentication','Sensitive data leakage','Credential stuffing','Application DDoS']);
+};
+
+RENDER.endpoint = ()=>{
+  return layerHead('Endpoint &amp; Server Threat Defense','EDR, malware, ransomware behavior, process chains &amp; isolation',
+    ['Abnormal process chain detection','Ransomware-like behavior','Containment recommendations','MITRE timeline summary'])
+  + '<div class="grid g4" style="margin-bottom:16px">'
+    +kpi('Endpoint Risk','47','1 active compromise','flat','&#9635;','var(--med)')
+    +kpi('Active EDR Alerts','4','1 critical','up','&#9670;','var(--crit)')
+    +kpi('Isolated Hosts','1','FIN-WS-204','flat','&#8856;','var(--high)')
+    +kpi('Patch Compliance','91%','42 hosts behind','down','&#9638;','var(--good)')
+  +'</div>'
+  +'<div class="grid g2" style="margin-bottom:16px">'
+    +'<div class="card"><h3>Endpoint Threats</h3>'
+    +'<table><tbody>'+[['Encoded PowerShell + LSASS dump','FIN-WS-204','crit','T1003.001','Isolate'],['Suspicious child process (Office to cmd to PS)','HR-WS-12','high','T1059','Investigate'],['Ransomware canary — mass file rename','FIN-WS-207','crit','T1486','Isolate'],['Credential dumping (Mimikatz sig)','DC-RIY-01','high','T1003','Investigate'],['Unauthorized remote tool (AnyDesk)','OPS-WS-31','med','T1219','Review'],['Suspicious registry run-key mod','MKT-WS-77','med','T1547.001','Review']].map(([n,h,s,m,a])=>'<tr class="row" onclick="openCopilot(\'Build endpoint investigation timeline for: '+n+' on '+h+'\')"><td>'+n+'<div class="tiny muted mono">'+h+'</div></td><td>'+sevTag(s)+'</td><td>'+mitrePills([m])+'</td><td><button class="btn sm" onclick="event.stopPropagation();alert(\''+a+' to SOAR playbook queued (demo)\')">'+a+'</button></td></tr>').join('')+'</tbody></table></div>'
+    +'<div class="card"><h3>Process Chain — FIN-WS-204 <span class="more tag t-crit">Compromised</span></h3>'
+    +'<div class="tl" style="margin-top:6px">'
+    +[['12:39:02','winword.exe opened Invoice_Q2.docm','crit'],['12:39:05','spawned cmd.exe /c','crit'],['12:39:06','powershell -enc base64 (T1059.001)','crit'],['12:39:41','rundll32 comsvcs.dll MiniDump lsass (T1003.001)','crit'],['12:40:10','outbound to news-cdn[.]live:443 (C2)','crit'],['12:41:00','EDR auto-isolated host','good']].map(([t,e,c])=>'<div class="tl-item '+c+'"><div class="tm">'+t+'</div><div class="ev">'+e+'</div></div>').join('')
+    +'</div>'
+    +'<button class="btn primary sm" style="width:100%;margin-top:8px" onclick="openCopilot(\'Summarize the FIN-WS-204 endpoint investigation and recommend containment + eradication.\')">&#10024; AI summary &amp; containment</button></div>'
+  +'</div>'
+  +useCaseCard('Endpoint Use Cases',['Suspicious PowerShell execution','Credential dumping','Malware execution','Ransomware encryption activity','Unauthorized remote tool','Suspicious registry modification']);
+};
+
+RENDER.cloud = ()=>{
+  after(()=>{ cloudChart('cldc'); });
+  return layerHead('Cloud Security Defense','CSPM/CWPP across AWS, Azure, GCP, OCI · containers &amp; Kubernetes',
+    ['Risky permission combinations','Exposed asset detection','Misconfig prioritization','Cloud attack path analysis'])
+  + '<div class="grid g4" style="margin-bottom:16px">'
+    +kpi('Cloud Risk Score','69','public exposure','flat','&#9729;','var(--med)')
+    +kpi('Misconfigurations','142','9 critical','up','&#9881;','var(--high)')
+    +kpi('Public Exposures','5','1 with PII','up','&#127760;','var(--crit)')
+    +kpi('Over-Privileged Roles','31','admin sprawl','flat','&#9919;','var(--med)')
+  +'</div>'
+  +'<div class="grid g3" style="margin-bottom:16px">'
+    +'<div class="card col-2"><h3>Cloud Findings by Provider &amp; Severity</h3><div class="chart-wrap"><canvas id="cldc"></canvas></div></div>'
+    +'<div class="card"><h3>Cloud Posture</h3>'+signalList([['CSPM compliant',81,'good'],['Workloads protected (CWPP)',74,'med'],['Containers scanned',88,'good'],['K8s admission control',62,'med'],['IaC scanned pre-deploy',79,'med']],'pct')+'</div>'
+  +'</div>'
+  +'<div class="card" style="margin-bottom:16px"><h3>Critical Cloud Risks</h3>'
+    +'<table><thead><tr><th>Finding</th><th>Resource</th><th>Cloud</th><th>Sev</th><th>MITRE</th><th>Action</th></tr></thead><tbody>'
+    +[['Public S3 bucket with customer PII','prod-customer-exports','AWS','crit','T1530'],['Over-permissive IAM role (Admin + AssumeRole)','ci-deployer','AWS','high','T1098'],['Exposed Kubernetes dashboard (no auth)','k8s-prod-dash','GCP','crit','T1610'],['New admin account created off-hours','azure-global-admin','Azure','high','T1136'],['Crypto-mining workload detected','gce-batch-09','GCP','high','T1496'],['Access key created + used in 90s','ci-deployer','AWS','med','T1098.001'],['Unapproved region usage (ap-east-1)','ec2-fleet','AWS','med','T1535']].map(([n,r,c,s,m])=>'<tr class="row" onclick="openCopilot(\'Generate cloud attack path analysis for: '+n+' ('+r+')\')"><td>'+n+'</td><td class="mono tiny">'+r+'</td><td><span class="tag t-info">'+c+'</span></td><td>'+sevTag(s)+'</td><td>'+mitrePills([m])+'</td><td><button class="btn sm" onclick="event.stopPropagation();alert(\'Remediation playbook queued (demo)\')">Remediate</button></td></tr>').join('')
+    +'</tbody></table></div>'
+  +useCaseCard('Cloud Use Cases',['Public S3 / Blob exposure','Over-permissive cloud role','Suspicious API calls','New admin account creation','Crypto mining activity','Exposed Kubernetes dashboard','Unapproved cloud region']);
+};
+
+RENDER.ti = ()=>{
+  return head('Threat Intelligence','IOC feeds, actor profiling, TTP mapping &amp; intel to detection',
+    '<button class="btn sm">Add feed</button><button class="btn primary sm" onclick="openCopilot(\'Summarize this week most relevant threats for our industry and map to our detection coverage.\')">&#10024; Intel brief</button>')
+  + '<div class="grid g4" style="margin-bottom:16px">'
+    +kpi('Active IOCs','48,210','312 high-confidence','flat','&#9678;','var(--accent2)')
+    +kpi('Tracked Actors','27','3 targeting our sector','flat','&#9760;','var(--high)')
+    +kpi('IOC Matches (7d)','19','5 confirmed','up','&#9670;','var(--high)')
+    +kpi('Feed Health','12/12','all syncing','down','&#10003;','var(--good)')
+  +'</div>'
+  +'<div class="grid g2" style="margin-bottom:16px">'
+    +'<div class="card"><h3>Threat Actors Targeting Our Sector</h3>'
+    +'<table><thead><tr><th>Actor</th><th>Type</th><th>Motivation</th><th>TTP overlap</th><th>Coverage</th></tr></thead><tbody>'
+    +[['APT-Sandworm','Nation-state','Disruption','12 techniques','83'],['FIN8','Cybercrime','Financial','9 techniques','78'],['Scattered Spider','Cybercrime','Extortion','11 techniques','71'],['Lazarus','Nation-state','Financial/espionage','14 techniques','69']].map(([n,t,m,o,c])=>'<tr class="row" onclick="openCopilot(\'Map '+n+' TTPs to our detection coverage and recommend new rules.\')"><td><b>'+n+'</b></td><td class="tiny muted">'+t+'</td><td class="tiny muted">'+m+'</td><td>'+o+'</td><td>'+scoreCell(+c)+'</td></tr>').join('')
+    +'</tbody></table></div>'
+    +'<div class="card"><h3>Recent IOC Matches</h3>'
+    +'<table><tbody>'+[['news-cdn[.]live','Domain · C2','crit','MKT-WS-77'],['45.146.x.x','IP · Scanner','high','core-fw'],['a3f9...e21b','SHA256 · Loader','crit','FIN-WS-204'],['paste[.]ee/x82','URL · Exfil','med','proxy'],['svc-update.exe','Filename · RAT','high','HR-WS-12']].map(([i,t,s,a])=>'<tr class="row"><td class="mono tiny">'+i+'</td><td class="tiny muted">'+t+'</td><td>'+sevTag(s)+'</td><td class="mono tiny">'+a+'</td></tr>').join('')+'</tbody></table>'
+    +'<div class="note" style="margin-top:12px">AI converted 3 intel reports into <b>hunt hypotheses</b> and proposed <b>5 new Sigma rules</b>. <span class="linkish" onclick="go(\'detect\')">Review in Detection Eng &rarr;</span></div></div>'
+  +'</div>'
+  +'<div class="card"><h3>Intelligence Sources &amp; Coverage</h3>'
+    +'<div class="pill-row">'+['MISP','Mandiant','Recorded Future','AlienVault OTX','Abuse.ch','Dark web monitoring','ISAC (sector)','CISA KEV','VirusTotal','Internal telemetry'].map(t=>'<span class="tag t-info">'+t+'</span>').join(' ')+'</div>'
+    +'<div class="divider"></div>'
+    +'<div class="grid g4">'+['Reconnaissance','Geo-threat map','C2 infrastructure','Malware families','Phishing kits','Leaked credentials','Exploit chatter','Ransomware groups'].map(t=>'<div class="note">'+t+'</div>').join('')+'</div></div>';
+};
+
+RENDER.vuln = ()=>{
+  return head('Vulnerability &amp; Exposure Management','Risk-based prioritization: asset value, exploitability &amp; exposure',
+    '<button class="btn sm">Export</button><button class="btn primary sm" onclick="openCopilot(\'Which 5 vulnerabilities should we patch first and why? Explain business impact.\')">&#10024; Ask Claude</button>')
+  + claudeStrip()
+  + '<div class="grid g4" style="margin-bottom:16px">'
+    +kpi('Open Vulns','12,847','risk-ranked','flat','&#9888;','var(--med)')
+    +kpi('Critical (risk-based)','38','12 internet-facing','up','&#9670;','var(--crit)')
+    +kpi('Exploited in Wild','9','CISA KEV match','up','&#9760;','var(--crit)')
+    +kpi('Mean Time to Remediate','11d','SLA: 7d crit','down','&#9201;','var(--med)')
+  +'</div>'
+  +'<div class="card" style="margin-bottom:16px"><h3>Risk-Based Priority Queue <span class="more">Severity is contextual: CVSS x exploit x asset criticality x exposure</span></h3>'
+    +'<table><thead><tr><th>CVE</th><th>Title</th><th>Sev</th><th>CVSS</th><th>Exploit</th><th>Asset</th><th>Exposure</th><th>Owner</th><th>SLA</th></tr></thead><tbody>'
+    +VULNS.map(v=>'<tr class="row" onclick="openCopilot(\'Explain '+v[0]+' impact in business language and recommend a remediation path with compensating controls.\')">'
+      +'<td class="mono tiny">'+v[0]+'</td><td style="max-width:200px">'+v[1]+'</td><td>'+sevTag(v[2])+'</td>'
+      +'<td><b style="color:'+(v[3]>=9?'var(--crit)':'var(--high)')+'">'+v[3]+'</b></td>'
+      +'<td><span class="tag '+(v[4].indexOf('ITW')>=0?'t-crit':v[4].indexOf('Yes')>=0?'t-high':'t-med')+'">'+v[4]+'</span></td>'
+      +'<td class="mono tiny">'+v[5]+'</td><td class="tiny '+(v[6].indexOf('Internet')>=0?'up':'muted')+'">'+v[6]+'</td>'
+      +'<td class="tiny muted">'+v[7]+'</td><td class="tiny">'+v[8]+'</td></tr>').join('')
+    +'</tbody></table></div>'
+  +'<div class="grid g2">'
+    +'<div class="card"><h3>Exposure by Surface</h3>'+signalList([['Internet-facing assets',1284,'high'],['Cloud-exposed resources',412,'high'],['Unpatched critical',38,'crit'],['EOL / unsupported',96,'med'],['Misconfigured services',203,'med']])+'</div>'
+    +'<div class="card"><h3>Claude Risk Insight</h3>'
+    +'<div class="note">CVE-2024-3400 on <b>VPN-GW-02</b> scores <b style="color:var(--crit)">98</b>: internet-facing + exploited in the wild + gateway to a flat network. Predicted breach likelihood <b>High</b> within 30 days if unpatched.</div>'
+    +'<div class="note" style="margin-top:10px">No patch window until the weekend? <b>Compensating control:</b> restrict the GlobalProtect portal to corporate IP ranges + enable threat-prevention signature 95187. Reduces risk <b>98 &rarr; 54</b>.</div>'
+    +'<button class="btn primary sm" style="width:100%;margin-top:12px" onclick="openCopilot(\'Build a remediation plan for our top 5 vulnerabilities with owners, SLAs and compensating controls.\')">&#10024; Ask Claude to build the plan</button></div>'
+  +'</div>';
+};
+
+const DETECTIONS = [
+  ['Multiple failed logins to success','T1110','high','Auth/SIEM logs'],
+  ['Privileged login outside business hours','T1078','high','AD / IdP logs'],
+  ['PowerShell encoded command execution','T1059.001','crit','EDR / Sysmon'],
+  ['DNS tunneling behavior','T1071.004','high','DNS logs'],
+  ['Large outbound data transfer','T1048','high','Firewall / proxy'],
+  ['New admin account creation','T1136','med','AD / Cloud audit'],
+  ['Cloud access key created + used immediately','T1098.001','med','CloudTrail'],
+  ['Suspicious API auth failures','T1110.004','high','API gateway'],
+  ['WAF SQL injection attack','T1190','high','WAF logs'],
+  ['Endpoint to known malicious IP','T1071','crit','EDR / NetFlow'],
+  ['Lateral movement SMB/RDP','T1021','high','Win events 4624/5140'],
+  ['Impossible travel login','T1078','high','IdP sign-in logs'],
+  ['MFA fatigue attack','T1621','med','IdP MFA logs'],
+  ['Unauthorized firewall policy change','T1562','high','Firewall mgmt logs'],
+  ['Public cloud storage exposure','T1530','crit','CSPM / Cloud audit'],
+];
+RENDER.detect = ()=>{
+  return head('Detection Engineering','Rule library, Sigma/KQL/SPL, lifecycle, tuning &amp; MITRE gap analysis',
+    '<button class="btn sm">+ New rule</button><button class="btn primary sm" onclick="openCopilot(\'Create a Sigma rule for encoded PowerShell spawning LSASS access, with tuning conditions.\')">&#10024; Generate rule</button>')
+  + '<div class="grid g4" style="margin-bottom:16px">'
+    +kpi('Active Detections','1,284','+22 this month','flat','&#8862;','var(--accent2)')
+    +kpi('MITRE Coverage','81%','12 gaps','down','&#9638;','var(--good)')
+    +kpi('Avg False Positive','11%','-3% after tuning','down','&#9676;','var(--good)')
+    +kpi('Rules Needing Tuning','17','high FP rate','up','&#9881;','var(--med)')
+  +'</div>'
+  +'<div class="card" style="margin-bottom:16px"><h3>Detection Rule Library — 15 Sample Use Cases <span class="more">Each: objective · logs · query · MITRE · severity · FP · response</span></h3>'
+    +'<table><thead><tr><th>Detection</th><th>MITRE</th><th>Sev</th><th>Required logs</th><th></th></tr></thead><tbody>'
+    +DETECTIONS.map((d,i)=>'<tr class="row" onclick="openDetection('+i+')"><td><b>'+d[0]+'</b></td><td>'+mitrePills([d[1]])+'</td><td>'+sevTag(d[2])+'</td><td class="tiny muted">'+d[3]+'</td><td><span class="linkish tiny">View logic &rarr;</span></td></tr>').join('')
+    +'</tbody></table></div>'
+  +'<div class="grid g2">'
+    +'<div class="card"><h3>Detection Lifecycle</h3>'
+    +'<div class="flow">'+['Idea / Intel','Draft','Test (lab)','Tune','Deploy','Monitor FP','Retire'].map((s,i,a)=>'<span class="node">'+s+'</span>'+(i<a.length-1?'<span class="arr">&rarr;</span>':'')).join('')+'</div>'
+    +'<div class="note" style="margin-top:12px">AI assists every stage: generates rules from incident data, explains logic, suggests tuning conditions, flags duplicate detections, and proposes new rules from fresh threat intel.</div></div>'
+    +'<div class="card"><h3>Top Detection Gaps (MITRE)</h3>'
+    +signalList([['T1556 Modify Auth Process',0,'crit'],['T1574 Hijack Execution Flow',0,'high'],['T1037 Boot/Logon Scripts',0,'high'],['T1647 Plist Modification',0,'med'],['T1505.003 Web Shell',0,'high']],'gap')
+    +'<button class="btn primary sm" style="width:100%;margin-top:10px" onclick="openCopilot(\'Propose detections to close our top 5 MITRE coverage gaps.\')">&#10024; Close the gaps</button></div>'
+  +'</div>';
+};
+
+const PLAYBOOKS = [
+  ['Phishing email response','Email Security','L1·Auto-enrich','Semi-auto',9],
+  ['Malware alert response','Endpoint','L2·Approve','Semi-auto',7],
+  ['Suspicious login response','IAM','L1·Auto','Auto (low-risk)',14],
+  ['Ransomware containment','Endpoint','L3·Manager','Manual approval',2],
+  ['Cloud credential compromise','Cloud','L2·Approve','Semi-auto',5],
+  ['Data exfiltration alert','Network/DLP','L2·Approve','Manual approval',4],
+  ['Privileged access misuse','IAM/PAM','L3·Manager','Manual approval',3],
+];
+RENDER.soar = ()=>{
+  return head('SOAR &amp; Automation','Playbooks with tiered automation: recommend to approve to auto-respond',
+    '<button class="btn sm">+ Build playbook</button><button class="btn primary sm" onclick="openCopilot(\'Recommend which low-risk responses we can safely fully automate.\')">&#10024; Automation advisor</button>')
+  + '<div class="grid g4" style="margin-bottom:16px">'
+    +kpi('Active Playbooks','38','7 core IR','flat','&#9881;','var(--accent2)')
+    +kpi('Automated Actions (24h)','412','94% success','down','&#9654;','var(--good)')
+    +kpi('Analyst Hours Saved','38h','this week','down','&#9201;','var(--good)')
+    +kpi('Pending Approvals','4','2 manager-level','up','&#9995;','var(--med)')
+  +'</div>'
+  +'<div class="card" style="margin-bottom:16px"><h3>Playbook Library</h3>'
+    +'<table><thead><tr><th>Playbook</th><th>Domain</th><th>Trigger / Approval</th><th>Automation level</th><th>Runs (7d)</th><th></th></tr></thead><tbody>'
+    +PLAYBOOKS.map(p=>'<tr class="row" onclick="openPlaybook(\''+p[0]+'\')"><td><b>'+p[0]+'</b></td><td class="tiny muted">'+p[1]+'</td><td class="tiny">'+p[2]+'</td>'
+    +'<td><span class="tag '+(p[3].indexOf('Auto (')>=0?'t-good':p[3].indexOf('Semi')>=0?'t-med':'t-high')+'">'+p[3]+'</span></td><td><b>'+p[4]+'</b></td><td><span class="linkish tiny">Open &rarr;</span></td></tr>').join('')
+    +'</tbody></table></div>'
+  +'<div class="grid g2">'
+    +'<div class="card"><h3>Automation Maturity Levels</h3>'
+    +'<div class="stepper">'+[['Manual recommendation','AI suggests, analyst acts'],['Analyst-approved action','One-click execute with audit'],['Manager-approved action','High-impact, dual control'],['Fully automated','Low-risk scenarios, auto-respond']].map((l,i)=>'<div class="step"><div class="n">'+(i+1)+'</div><div class="ct"><b>'+l[0]+'</b> <span class="tag '+(i===3?'t-good':'t-info')+'">'+(i===3?'Auto':'Gated')+'</span><p>'+l[1]+'</p></div></div>').join('')+'</div></div>'
+    +'<div class="card"><h3>Available Automated Actions</h3>'
+    +'<div class="pill-row">'+['Disable user','Isolate endpoint','Firewall block IP/domain','Revoke cloud access','Force password reset','Enforce MFA','Block IOC','Create ticket','Enrich IP/domain','Quarantine email','Rotate secrets','Notify on-call'].map(a=>'<span class="tag t-purple">'+a+'</span>').join(' ')+'</div>'
+    +'<div class="note" style="margin-top:14px">Every automated action writes to <b>immutable audit log</b> with approver, evidence snapshot, and rollback path.</div></div>'
+  +'</div>';
+};
+
+RENDER.compliance = ()=>{
+  return head('Compliance &amp; Governance','Control mapping, evidence, audit readiness &amp; regulatory reporting',
+    '<button class="btn sm" onclick="go(\'reports\')">Evidence report</button><button class="btn primary sm" onclick="openCopilot(\'Identify our top compliance gaps and draft a remediation plan with owners and due dates.\')">&#10024; Gap analysis</button>')
+  + '<div class="grid g4" style="margin-bottom:16px">'
+    +kpi('Overall Maturity','86%','+4% QoQ','down','&#9638;','var(--good)')
+    +kpi('Open Findings','64','14 high','flat','&#9670;','var(--med)')
+    +kpi('Evidence Auto-Collected','92%','controls','down','&#128206;','var(--good)')
+    +kpi('Open Exceptions','11','3 expiring','up','&#9888;','var(--med)')
+  +'</div>'
+  +'<div class="card" style="margin-bottom:16px"><h3>Framework Compliance Posture</h3>'
+    +'<table><thead><tr><th>Framework</th><th>Maturity</th><th>Controls</th><th>Open gaps</th><th>Status</th><th></th></tr></thead><tbody>'
+    +COMPLIANCE.map(([f,m,c,g,s])=>'<tr class="row" onclick="openCopilot(\'Show control mapping and evidence status for '+f+'.\')"><td><b>'+f+'</b></td><td>'+scoreCell(m)+'</td><td class="muted">'+c+'</td><td><b style="color:'+(g>15?'var(--high)':'var(--med)')+'">'+g+'</b></td><td><span class="tag '+(String(s).indexOf('Certified')>=0||String(s).indexOf('Compliant')>=0?'t-good':String(s).indexOf('Gap')>=0?'t-high':'t-info')+'">'+s+'</span></td><td><span class="linkish tiny">Map &rarr;</span></td></tr>').join('')
+    +'</tbody></table></div>'
+  +'<div class="grid g2">'
+    +'<div class="card"><h3>Open Compliance Gaps <span class="more">control · evidence · owner · due · status</span></h3>'
+    +'<table><thead><tr><th>Gap</th><th>Control</th><th>Owner</th><th>Due</th><th>Status</th></tr></thead><tbody>'
+    +[['MFA not enforced for all admins','ISO A.5.17','IAM Team','Jul 15','In progress'],['Log retention &lt; 12mo (PCI)','PCI 10.5','SecOps','Jul 30','Open'],['Encryption at rest gaps (legacy DB)','NIST PR.DS-01','DBA','Aug 10','Open'],['Quarterly access review overdue','SOC2 CC6.2','IAM Team','Jul 08','At risk'],['Vendor risk assessments incomplete','NCA ECC 4-1','GRC','Aug 22','In progress']].map(([g,c,o,d,s])=>'<tr class="row"><td style="max-width:200px">'+g+'</td><td class="mono tiny">'+c+'</td><td class="tiny">'+o+'</td><td class="tiny">'+d+'</td><td><span class="tag '+(s==='At risk'?'t-high':s==='Open'?'t-med':'t-info')+'">'+s+'</span></td></tr>').join('')
+    +'</tbody></table></div>'
+    +'<div class="card"><h3>AI Compliance Assist</h3>'
+    +'<div class="note">Linked <b>INC-2026-0409</b> (public S3 exposure) to control failures: <b>ISO A.8.12</b> (DLP), <b>PCI 1.3</b> (no public access), <b>NIST PR.AC-04</b>. Auto-generated audit evidence summary + remediation plan.</div>'
+    +'<div class="note" style="margin-top:10px"><b>Regulatory readiness:</b> ISO 27001 surveillance audit in 41 days — 7 controls need evidence refresh. AI drafted responses for 5.</div>'
+    +'<div class="pill-row" style="margin-top:12px">'+['Control library','Audit tracker','Risk register','Exception mgmt','Control testing','Mgmt reporting'].map(t=>'<span class="tag t-info">'+t+'</span>').join(' ')+'</div></div>'
+  +'</div>';
+};
+
+const REPORTS = [
+  ['Daily SOC Operations Report','SOC Manager','Alerts, MTTD/MTTR, queue, SLA breaches','Daily'],
+  ['Weekly Threat Hunting Report','Hunt Lead / CISO','Hunts, findings, MITRE coverage, gaps','Weekly'],
+  ['Monthly Cyber Risk Report','CISO / Risk Committee','Risk score trend, top risks, treatment','Monthly'],
+  ['Executive Cyber Posture Report','Executive Mgmt','Posture, incidents, compliance, investment','Monthly'],
+  ['Incident Closure Report','IR / Stakeholders','Timeline, impact, RCA, lessons learned','Per incident'],
+  ['Vulnerability Risk Report','IT / Asset owners','Risk-ranked vulns, SLA, remediation','Weekly'],
+  ['IAM Risk Report','IAM / PAM','Privileged access, MFA, dormant, reviews','Monthly'],
+  ['Cloud Security Report','Cloud / CISO','Misconfig, exposure, IAM, compliance','Monthly'],
+  ['Application Security Report','AppSec / Dev','OWASP, WAF, vulns, code issues','Monthly'],
+  ['Compliance Evidence Report','GRC / Auditors','Control status, evidence, gaps, exceptions','On demand'],
+  ['Board Cybersecurity Report','Board','Posture, business risk, peer benchmark','Quarterly'],
+];
+RENDER.reports = ()=>{
+  return head('Reports','Templated reports — each with purpose, audience, metrics, findings, risk, impact, recommendations, owners, due dates',
+    '<button class="btn primary sm" onclick="openCopilot(\'Generate this month Executive Cyber Posture Report.\')">&#10024; '+tr('Generate report')+'</button>')
+  + '<div class="grid g3">'
+    +REPORTS.map(([n,a,k,f])=>'<div class="card" style="cursor:pointer" onclick="openCopilot(\'Generate the '+n+' for the latest period.\')">'
+      +'<div class="flex between"><span class="tag t-info">'+tr(f)+'</span><span class="linkish tiny">'+tr('Generate')+' &rarr;</span></div>'
+      +'<h3 style="margin:10px 0 6px">'+tr(n)+'</h3>'
+      +'<div class="kv tiny"><div class="k">'+tr('Audience')+'</div><div>'+tr(a)+'</div><div class="k">'+tr('Key metrics')+'</div><div class="muted">'+tr(k)+'</div></div></div>').join('')
+    +'</div>'
+  +'<div class="card" style="margin-top:16px"><h3>'+tr('Standard Report Structure')+'</h3>'
+    +'<div class="pill-row">'+['Purpose','Audience','Key metrics','Findings','Risk rating','Business impact','Recommendations','Action owners','Due dates'].map(t=>'<span class="tag t-purple">'+tr(t)+'</span>').join(' ')+'</div></div>';
+};
+
+RENDER.architecture = ()=>{
+  const layers=['Data Ingestion','Log Normalization','Event Correlation','AI Analytics Engine','Risk Scoring Engine','Threat Intel Engine','Case Management','SOAR / Automation','Reporting Engine','UI Layer','API Integration','Evidence Repository','Audit & Compliance'];
+  const entities=[
+    ['User','identity, dept, risk score, MFA, manager','owns Assets, triggers Alerts'],
+    ['Asset','type, criticality, owner, exposure','has Vulnerabilities, in Incidents'],
+    ['Application','tier, data class, APIs, owner','maps to Vulns, WAF events'],
+    ['Endpoint / Server','OS, patch level, EDR, isolation','generates Alerts'],
+    ['Cloud Resource','provider, region, config, exposure','CSPM findings'],
+    ['Privileged Account','scope, PAM, last use','identity attack paths'],
+    ['Vulnerability','CVE, CVSS, exploit, SLA','affects Assets'],
+    ['Alert','source, sev, score, MITRE, status','rolls into Incident'],
+    ['Incident','category, timeline, impact, owner','contains Alerts, Evidence'],
+    ['Threat Actor','motivation, TTPs, sector','linked to IOCs'],
+    ['IOC','type, confidence, expiry, source','matched to telemetry'],
+    ['Detection Rule','logic, MITRE, FP rate, status','generates Alerts'],
+    ['Hunt Hypothesis','MITRE, data, query, findings','produces Incidents'],
+    ['Control','framework, evidence, owner, status','mapped to Incidents'],
+    ['Risk','score, impact, treatment, owner','aggregates posture'],
+    ['Evidence','hash, immutable, chain-of-custody','attached to Incident'],
+    ['Playbook','triggers, actions, automation level','runs on Incident'],
+  ];
+  return head('Architecture &amp; Enterprise Data Model','Reference architecture, data flow &amp; core entities',
+    '<button class="btn sm" onclick="openCopilot(\'Explain the data flow from a Palo Alto firewall log to a board report.\')">&#10024; Explain data flow</button>')
+  + '<div class="card" style="margin-bottom:16px"><h3>Platform Architecture — 13 Layers</h3>'
+    +'<div class="flow">'+layers.map((l,i,a)=>'<span class="node">'+l+'</span>'+(i<a.length-1?'<span class="arr">&rarr;</span>':'')).join('')+'</div>'
+    +'<div class="note" style="margin-top:14px"><b>Data flow:</b> Security tools (SIEM/EDR/IAM/Cloud/WAF/firewall) to ingest &amp; normalize (common schema) to correlation + AI analytics to risk scoring + MITRE mapping to alerts to incidents/hunts to SOAR response to evidence repository to dashboards &amp; reports. The audit &amp; compliance layer observes everything.</div></div>'
+  +'<div class="grid g3" style="margin-bottom:16px">'
+    +kpi('API-first','REST + GraphQL','every entity exposed','flat','&#9671;','var(--accent2)')
+    +kpi('Multi-tenant','Isolated','per business unit','flat','&#9635;','var(--accent2)')
+    +kpi('Evidence','Immutable / WORM','chain-of-custody','flat','&#128274;','var(--good)')
+  +'</div>'
+  +'<div class="card"><h3>Core Data Entities <span class="more">key attributes · relationships · risk · ownership · lifecycle</span></h3>'
+    +'<table><thead><tr><th>Entity</th><th>Key attributes</th><th>Relationships</th></tr></thead><tbody>'
+    +entities.map(([e,a,r])=>'<tr class="row"><td><b>'+e+'</b></td><td class="tiny muted">'+a+'</td><td class="tiny">'+r+'</td></tr>').join('')
+    +'</tbody></table></div>'
+  +'<div class="card" style="margin-top:16px"><h3>Unified Risk Scoring Engine</h3>'
+    +'<div class="grid g4">'+['Asset criticality','Vulnerability severity','Exploit availability','Identity privilege','Threat-intel match','Business impact','Internet exposure','Incident history','Control effectiveness','Patch status','Behavior anomaly','Data sensitivity'].map(f=>'<div class="note tiny">'+f+'</div>').join('')+'</div>'
+    +'<div class="flex wrap" style="margin-top:14px;gap:8px">'+[['Critical','90–100','crit'],['High','70–89','high'],['Medium','40–69','med'],['Low','1–39','low']].map(([n,r,s])=>'<span class="tag '+sevClass[s]+'">'+n+' · '+r+'</span>').join('')+'</div>'
+    +'<div class="note" style="margin-top:12px">Weighted, explainable model: each entity shows its score <b>and the contributing factors</b>. Example — FIN-WS-204: criticality(High) + active malware + cred access + internet-adjacent = <b>96 / Critical</b>.</div></div>';
+};
+
+RENDER.admin = ()=>{
+  const roles=['Super Admin','CISO','SOC Manager','SOC Analyst L1','SOC Analyst L2','SOC Analyst L3','Threat Hunter','IAM Analyst','Network Eng','AppSec Eng','Cloud Eng','Compliance Auditor','Executive Viewer'];
+  const caps=['View','Create','Edit','Approve','Escalate','Export','Automate'];
+  const matrix={
+    'Super Admin':[1,1,1,1,1,1,1],'CISO':[1,0,0,1,1,1,0],'SOC Manager':[1,1,1,1,1,1,1],
+    'SOC Analyst L1':[1,1,0,0,1,0,0],'SOC Analyst L2':[1,1,1,0,1,1,1],'SOC Analyst L3':[1,1,1,1,1,1,1],
+    'Threat Hunter':[1,1,1,0,1,1,1],'IAM Analyst':[1,1,1,1,1,1,1],'Network Eng':[1,1,1,0,1,1,1],
+    'AppSec Eng':[1,1,1,0,1,1,1],'Cloud Eng':[1,1,1,0,1,1,1],'Compliance Auditor':[1,1,0,0,0,1,0],'Executive Viewer':[1,0,0,0,0,1,0],
+  };
+  const dot=(v)=>v?'<span class="dot-s" style="background:var(--good)"></span>':'<span class="dot-s" style="background:var(--line2)"></span>';
+  return head('Roles &amp; Access Control (RBAC)','13 enterprise roles · least-privilege permission matrix',
+    '<button class="btn sm">+ Add role</button>')
+  + '<div class="card"><h3>Permission Matrix <span class="more">View · Create · Edit · Approve · Escalate · Export · Automate</span></h3>'
+    +'<table><thead><tr><th>Role</th>'+caps.map(c=>'<th style="text-align:center">'+c+'</th>').join('')+'</tr></thead><tbody>'
+    +roles.map(r=>'<tr class="row"><td><b>'+r+'</b></td>'+matrix[r].map(v=>'<td style="text-align:center">'+dot(v)+'</td>').join('')+'</tr>').join('')
+    +'</tbody></table>'
+    +'<div class="legend"><span><span class="dot-s" style="background:var(--good)"></span>Granted</span><span><span class="dot-s" style="background:var(--line2)"></span>Denied</span></div></div>'
+  +'<div class="grid g3" style="margin-top:16px">'
+    +kpi('SSO / SAML','Enforced','+ SCIM provisioning','flat','&#9919;','var(--good)')
+    +kpi('Step-up MFA','On approvals','high-impact actions','flat','&#9676;','var(--good)')
+    +kpi('Every action','Audit-logged','immutable trail','flat','&#128220;','var(--accent2)')
+  +'</div>';
+};
+
+function layerHead(title,sub,aiCaps){
+  return head(title,sub,'<button class="btn sm" onclick="openCopilot()">&#10024; Copilot</button>')
+   + '<div class="card" style="margin-bottom:16px;padding:12px 16px"><div class="flex wrap" style="gap:8px">'
+   +'<span class="tag t-purple">AI capabilities</span>'+aiCaps.map(c=>'<span class="tag t-info">'+c+'</span>').join(' ')+'</div></div>';
+}
+function signalList(arr,fmt){
+  const mx=Math.max.apply(null,arr.map(a=>a[1]))||1;
+  return '<div class="plist">'+arr.map(([n,v,s])=>'<div class="prow">'
+    +'<span class="nm '+(fmt==='mono'?'mono tiny':'')+'">'+n+'</span>'
+    +(fmt==='gap'?'<span class="tag t-crit tiny" style="font-size:9px">GAP</span>':'<div class="bar" style="width:90px"><i style="width:'+(fmt==='pct'?v:v/mx*100)+'%;background:'+(sevColor[s]||'var(--accent)')+'"></i></div>')
+    +'<span class="pc">'+(fmt==='pct'?v+'%':v)+'</span></div>').join('')+'</div>';
+}
+function useCaseCard(title,cases){
+  return '<div class="card"><h3>'+title+' <span class="more">click any &rarr; AI investigation</span></h3>'
+    +'<div class="pill-row">'+cases.map(c=>'<span class="chip" onclick="openCopilot(\'Investigate use case: '+c+'\')">'+c+'</span>').join('')+'</div></div>';
+}
+
+function gridColor(){return getComputedStyle(document.documentElement).getPropertyValue('--line')}
+function txtColor(){return getComputedStyle(document.documentElement).getPropertyValue('--txt2')}
+function baseOpts(extra){extra=extra||{};return Object.assign({responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{labels:{color:txtColor(),boxWidth:12,font:{size:11}}}},
+  scales:{x:{ticks:{color:txtColor(),font:{size:10}},grid:{color:gridColor()}},
+          y:{ticks:{color:txtColor(),font:{size:10}},grid:{color:gridColor()}}}},extra)}
+function mk(id,cfg){const el=document.getElementById(id);if(!el)return;const c=new Chart(el,cfg);charts.push(c);return c}
+const D7=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const H6=['00','04','08','12','16','20','now'];
+function trendChart(id){mk(id,{type:'line',data:{labels:['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12'],
+  datasets:[{label:'Cyber Risk Score',data:[71,73,70,74,76,72,75,79,77,80,78,78],borderColor:'#f97316',backgroundColor:'rgba(249,115,22,.12)',fill:true,tension:.35},
+  {label:'Incidents',data:[4,6,3,7,5,8,6,9,7,6,8,7],borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.1)',tension:.35,yAxisID:'y1'}]},
+  options:baseOpts({scales:{x:{ticks:{color:txtColor(),font:{size:9}},grid:{color:gridColor()}},y:{ticks:{color:txtColor()},grid:{color:gridColor()},min:50,max:100},y1:{position:'right',ticks:{color:txtColor()},grid:{display:false}}}})})}
+function donutChart(id){mk(id,{type:'doughnut',data:{labels:['Identity','Cloud','Network','App','Endpoint','Data'],
+  datasets:[{data:[72,69,64,58,47,55],backgroundColor:['#ef4444','#f97316','#eab308','#3b82f6','#22c55e','#a855f7'],borderWidth:0}]},
+  options:Object.assign(baseOpts(),{cutout:'62%',scales:{}})})}
+function alertTrend(id){mk(id,{type:'bar',data:{labels:H6,
+  datasets:[{label:'Critical',data:[1,0,2,3,1,2,1],backgroundColor:'#dc2626'},{label:'High',data:[3,2,5,7,4,5,3],backgroundColor:'#f97316'},
+  {label:'Medium',data:[8,6,11,14,9,12,7],backgroundColor:'#eab308'},{label:'Low',data:[14,10,18,22,15,19,12],backgroundColor:'#3b82f6'}]},
+  options:baseOpts({scales:{x:{stacked:true,ticks:{color:txtColor()},grid:{color:gridColor()}},y:{stacked:true,ticks:{color:txtColor()},grid:{color:gridColor()}}}})})}
+function domainBars(id){mk(id,{type:'bar',data:{labels:['Identity','Cloud','Network','App','Endpoint','Data'],
+  datasets:[{label:'Risk',data:[72,69,64,58,47,55],backgroundColor:['#ef4444','#f97316','#eab308','#3b82f6','#22c55e','#a855f7']}]},
+  options:Object.assign(baseOpts(),{indexAxis:'y',plugins:{legend:{display:false}}})})}
+function fpChart(id){mk(id,{type:'doughnut',data:{labels:['True positive','Benign-true','False positive'],
+  datasets:[{data:[73,16,11],backgroundColor:['#22c55e','#f59e0b','#ef4444'],borderWidth:0}]},
+  options:Object.assign(baseOpts(),{cutout:'60%',plugins:{legend:{display:false}},scales:{}})})}
+function loginChart(id){mk(id,{type:'line',data:{labels:D7,
+  datasets:[{label:'Failed logins',data:[210,180,340,290,520,610,480],borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,.12)',fill:true,tension:.35},
+  {label:'Anomalous logins',data:[4,3,8,6,12,15,9],borderColor:'#a855f7',tension:.35,yAxisID:'y1'}]},
+  options:baseOpts({scales:{x:{ticks:{color:txtColor()},grid:{color:gridColor()}},y:{ticks:{color:txtColor()},grid:{color:gridColor()}},y1:{position:'right',ticks:{color:txtColor()},grid:{display:false}}}})})}
+function trafficChart(id){mk(id,{type:'line',data:{labels:H6,
+  datasets:[{label:'Traffic (Gbps)',data:[12,9,18,24,21,19,15],borderColor:'#22d3ee',backgroundColor:'rgba(34,211,238,.12)',fill:true,tension:.35},
+  {label:'Threat events',data:[40,28,95,160,88,110,72],borderColor:'#ef4444',tension:.35,yAxisID:'y1'}]},
+  options:baseOpts({scales:{x:{ticks:{color:txtColor()},grid:{color:gridColor()}},y:{ticks:{color:txtColor()},grid:{color:gridColor()}},y1:{position:'right',ticks:{color:txtColor()},grid:{display:false}}}})})}
+function cloudChart(id){mk(id,{type:'bar',data:{labels:['AWS','Azure','GCP','Oracle'],
+  datasets:[{label:'Critical',data:[4,2,3,0],backgroundColor:'#dc2626'},{label:'High',data:[11,8,6,2],backgroundColor:'#f97316'},
+  {label:'Medium',data:[28,19,14,7],backgroundColor:'#eab308'}]},
+  options:baseOpts({scales:{x:{stacked:true,ticks:{color:txtColor()},grid:{color:gridColor()}},y:{stacked:true,ticks:{color:txtColor()},grid:{color:gridColor()}}}})})}
+
+const MITRE = {
+ 'Initial Access':[['Phishing',2],['Exploit Public App',3],['Valid Accounts',3]],
+ 'Execution':[['PowerShell',3],['Command/Script',2],['WMI',1]],
+ 'Persistence':[['Account Manip',2],['Scheduled Task',1],['Registry Run Key',1]],
+ 'Priv Esc':[['Valid Accounts',3],['Token Manip',0],['Bypass UAC',1]],
+ 'Defense Evasion':[['Obfuscated Files',2],['Disable Tools',1],['Masquerading',1]],
+ 'Cred Access':[['LSASS Dump',3],['Brute Force',2],['MFA Fatigue',2]],
+ 'Discovery':[['Network Scan',1],['Account Discovery',1],['Cloud Discovery',1]],
+ 'Lateral Mvmt':[['SMB/Admin',3],['RDP',2],['Pass the Hash',0]],
+ 'Collection':[['Data Staged',1],['Email Collect',1],['Screen Capture',0]],
+ 'C2':[['DNS C2',3],['Web Protocols',2],['Encrypted Chan',1]],
+ 'Exfiltration':[['Over C2',2],['Cloud Storage',2],['Web Service',1]],
+ 'Impact':[['Ransomware',3],['Data Destruct',0],['Resource Hijack',1]],
+ 'Recon':[['Active Scan',1],['Gather Identity',0],['Search Open',0]],
+};
+function buildMitre(){
+  const el=document.getElementById('mitreMatrix');if(!el)return;
+  let h='<div class="mitre">';
+  Object.keys(MITRE).forEach(tac=>{
+    h+='<div class="col"><div class="ch">'+tac+'</div>';
+    MITRE[tac].forEach(([t,lvl])=>{h+='<div class="tech '+(lvl?'l'+lvl:'')+'" onclick="openCopilot(\'Hunt for technique: '+t+' ('+tac+').\')">'+t+'</div>'});
+    h+='</div>';
+  });
+  h+='</div>';el.innerHTML=h;
+}
+
+function openDrawer(html){$('#drawerContent').innerHTML=html;$('#drawer').classList.add('open');$('#backdrop').classList.add('show')}
+function closeAll(){$('#drawer').classList.remove('open');$('#copilot').classList.remove('open');$('#backdrop').classList.remove('show')}
+function dHead(title,sub,tag){return '<div class="drawer-head"><div class="flex between"><div><div class="flex" style="gap:8px">'+(tag||'')+'<h1 style="font-size:18px">'+title+'</h1></div><div class="sub muted tiny" style="margin-top:4px">'+sub+'</div></div><button class="x" onclick="closeAll()">&times;</button></div></div>'}
+
+function openAlert(id){
+  const a=ALERTS.find(x=>x.id===id);if(!a)return;
+  setCopFocus({kind:'alert',id:a.id,severity:a.sev,riskScore:a.score,name:a.name,entity:a.entity,asset:a.asset,mitre:a.mitre});
+  openDrawer(dHead(a.name,a.id+' · '+a.src+' · '+a.t,sevTag(a.sev))+'<div class="drawer-body">'
+    +'<div class="grid g3" style="margin-bottom:16px">'
+    +'<div class="card" style="text-align:center;padding:12px">'+ring(a.score)+'<div class="tiny muted" style="margin-top:6px">Risk score</div></div>'
+    +'<div class="card"><div class="lab tiny muted">Entity</div><div style="font-weight:700;margin:4px 0">'+a.entity+'</div><div class="lab tiny muted" style="margin-top:8px">Asset</div><div class="mono tiny">'+a.asset+'</div><div class="lab tiny muted" style="margin-top:8px">Status</div><div><span class="tag t-info">'+a.status+'</span></div></div>'
+    +'<div class="card"><div class="lab tiny muted">MITRE ATT&CK</div><div style="margin:6px 0">'+mitrePills(a.mitre)+'</div><div class="lab tiny muted" style="margin-top:8px">Recommended response</div><div class="tiny">'+(a.sev==='crit'?'Isolate host, reset creds, hunt lateral movement':a.sev==='high'?'Investigate, block indicator, escalate to L2':'Validate, enrich, monitor')+'</div></div>'
+    +'</div>'
+    +'<div class="sec-title">Evidence</div>'
+    +'<div class="codeblk">source='+a.src+'  entity='+a.entity+'  asset='+a.asset+'\nscore='+a.score+'  techniques=['+a.mitre.join(', ')+']\nraw: '+a.name+'\ncorrelation: linked to '+(a.sev==='crit'?'INC-2026-0412 (active)':'2 related alerts in last 1h')+'</div>'
+    +'<div class="flex wrap" style="margin-top:16px;gap:8px">'
+    +'<button class="btn primary sm" onclick="alert(\'Escalated to incident created (demo)\')">Escalate to incident</button>'
+    +'<button class="btn sm" onclick="openCopilot(\'Why is alert '+a.id+' critical? Explain the evidence and recommend response.\')">&#10024; Explain &amp; recommend</button>'
+    +'<button class="btn sm" onclick="go(\'soar\');closeAll()">Run playbook</button>'
+    +'<button class="btn sm">Mark benign</button></div>'
+  +'</div>');
+}
+function openIncident(id){
+  const i=INCIDENTS.find(x=>x.id===id);if(!i)return;
+  setCopFocus({kind:'incident',id:i.id,severity:i.sev,riskScore:i.risk,title:i.title,category:i.cat,stage:i.status,mitre:i.mitre});
+  openDrawer(dHead(i.title,i.id+' · '+i.cat+' · '+i.owner,sevTag(i.sev))+'<div class="drawer-body">'
+    +'<div class="grid g3" style="margin-bottom:16px">'
+    +'<div class="card" style="text-align:center;padding:12px">'+ring(i.risk)+'<div class="tiny muted" style="margin-top:6px">Incident risk</div></div>'
+    +'<div class="card"><div class="kv tiny"><div class="k">Stage</div><div><span class="tag t-info">'+i.status+'</span></div><div class="k">SLA</div><div class="up">'+i.sla+'</div><div class="k">Affected</div><div>'+i.assets+' assets</div><div class="k">Owner</div><div>'+i.owner+'</div></div></div>'
+    +'<div class="card"><div class="lab tiny muted">MITRE kill chain</div><div style="margin:6px 0">'+mitrePills(i.mitre)+'</div><div class="lab tiny muted" style="margin-top:8px">Business impact</div><div class="tiny">'+(i.risk>90?'High — potential data loss + operational disruption':'Moderate — contained, limited blast radius')+'</div></div>'
+    +'</div>'
+    +'<div class="sec-title">Investigation Timeline</div>'
+    +'<div class="tl">'+[['T+0','Alert triggered & auto-correlated','crit'],['T+3m','Analyst triaged, severity confirmed',''],['T+12m','Scope expanded — '+i.assets+' assets affected',''],['T+24m','Containment actions initiated','crit'],['T+38m','Eradication in progress','good']].map(([t,e,c])=>'<div class="tl-item '+c+'"><div class="tm">'+t+'</div><div class="ev">'+e+'</div></div>').join('')+'</div>'
+    +'<div class="sec-title" style="margin-top:16px">Response Actions</div>'
+    +'<div class="stepper">'+[['Containment','Isolate affected hosts, disable compromised accounts'],['Eradication','Remove malware, rotate secrets, patch entry vector'],['Recovery','Restore from clean backup, validate integrity'],['Lessons Learned','RCA, detection improvements, closure report']].map((s,n)=>'<div class="step"><div class="n">'+(n+1)+'</div><div class="ct"><b>'+s[0]+'</b><p>'+s[1]+'</p></div></div>').join('')+'</div>'
+    +'<div class="flex wrap" style="margin-top:16px;gap:8px">'
+    +'<button class="btn primary sm" onclick="openCopilot(\'Generate an executive summary and closure report for '+i.id+'.\')">&#10024; Generate closure report</button>'
+    +'<button class="btn sm" onclick="go(\'soar\');closeAll()">Containment playbook</button>'
+    +'<button class="btn sm" onclick="openCopilot(\'What controls failed in incident '+i.id+'?\')">Map control failures</button></div>'
+  +'</div>');
+}
+function openEntity(name,kind){
+  setCopFocus({kind:(kind==='user'?'identity':'asset'),name:name});
+  openDrawer(dHead(name,(kind==='user'?'Identity':'Asset')+' · 360 view','<span class="tag t-high">High risk</span>')+'<div class="drawer-body">'
+    +'<div class="grid g2" style="margin-bottom:16px">'
+    +'<div class="card" style="text-align:center;padding:12px">'+ring(kind==='user'?91:88)+'<div class="tiny muted" style="margin-top:6px">'+(kind==='user'?'Identity':'Asset')+' risk</div></div>'
+    +'<div class="card"><div class="lab tiny muted">Risk factors</div><div class="plist" style="margin-top:8px">'+(kind==='user'?[['Anomalous behavior',88],['Privilege level',75],['Threat-intel match',62]]:[['Active threat',96],['Vulnerability',82],['Exposure',70]]).map(([n,v])=>'<div class="prow"><span class="nm tiny">'+n+'</span><div class="bar" style="flex:1"><i style="width:'+v+'%;background:'+barColor(v)+'"></i></div><span class="pc">'+v+'</span></div>').join('')+'</div></div>'
+    +'</div>'
+    +'<div class="sec-title">Recent Activity (24h)</div>'
+    +'<div class="tl">'+[['12:41','Linked to active alert / incident','crit'],['11:20','Anomalous authentication detected',''],['09:05','Normal baseline activity','good']].map(([t,e,c])=>'<div class="tl-item '+c+'"><div class="tm">'+t+'</div><div class="ev">'+e+'</div></div>').join('')+'</div>'
+    +'<div class="flex wrap" style="margin-top:16px;gap:8px">'
+    +'<button class="btn primary sm" onclick="openCopilot(\'Show all activity related to '+name+' in the last 24 hours and assess risk.\')">&#10024; Investigate</button>'
+    +(kind==='user'?'<button class="btn sm">Disable account</button><button class="btn sm">Force password reset</button>':'<button class="btn sm">Isolate</button><button class="btn sm">Scan</button>')
+    +'</div></div>');
+}
+function openDetection(i){
+  const d=DETECTIONS[i];
+  const queries={
+    'PowerShell encoded command execution':'index=edr process=powershell.exe\n| where CommandLine like "%-enc%" OR CommandLine like "%FromBase64%"\n| stats count by host, user, CommandLine',
+    'DNS tunneling behavior':'DnsEvents\n| summarize qcount=count(), avglen=avg(strlen(QueryName)) by ClientIP, bin(TimeGenerated,5m)\n| where qcount > 200 and avglen > 50',
+    'Impossible travel login':'SigninLogs\n| summarize make_list(Location), make_list(TimeGenerated) by UserPrincipalName\n| where velocity_kmh > 900',
+  };
+  const q=queries[d[0]]||('-- '+d[0]+'\nsource='+d[3]+'\n| where matches(behavior, "'+d[0]+'")\n| stats count by entity\n| where count > threshold');
+  openDrawer(dHead(d[0],'Detection rule · '+d[3],sevTag(d[2]))+'<div class="drawer-body">'
+    +'<div class="kv" style="margin-bottom:14px"><div class="k">Objective</div><div>Detect '+d[0].toLowerCase()+' indicative of adversary activity.</div>'
+    +'<div class="k">Required logs</div><div>'+d[3]+'</div><div class="k">MITRE</div><div>'+mitrePills([d[1]])+'</div>'
+    +'<div class="k">Severity</div><div>'+sevTag(d[2])+'</div></div>'
+    +'<div class="sec-title">Query logic</div><div class="codeblk">'+q+'</div>'
+    +'<div class="sec-title" style="margin-top:14px">False-positive scenarios</div>'
+    +'<div class="note tiny">Admin scripting / legitimate automation · scheduled maintenance windows · approved penetration tests · backup service accounts. Tune with allowlists + business-context enrichment.</div>'
+    +'<div class="sec-title" style="margin-top:14px">Response action</div>'
+    +'<div class="note tiny">'+(d[2]==='crit'?'Auto-isolate + escalate to L3 + open incident':d[2]==='high'?'Enrich, notify analyst, prepare containment':'Alert L1, validate, monitor')+'.</div>'
+    +'<div class="flex wrap" style="margin-top:16px;gap:8px"><button class="btn primary sm" onclick="openCopilot(\'Create a Sigma rule for: '+d[0]+'\')">&#10024; Generate Sigma</button><button class="btn sm">Test in lab</button><button class="btn sm">Deploy</button></div>'
+  +'</div>');
+}
+const PB_STEPS={
+ 'Phishing email response':['Receive & parse alert','Validate sender / SPF-DKIM-DMARC','Check email headers','Check URL reputation','Check attachment hash (sandbox)','Search affected users','Remove email from all inboxes','Block sender / domain','Reset compromised credentials','Create incident report'],
+ 'Suspicious login response':['Validate login geolocation','Check MFA status','Check impossible travel','Review device / user-agent','Review recent user activity','Disable account if confirmed','Force password reset','Revoke active sessions','Escalate to IAM team'],
+ 'Malware alert response':['Confirm endpoint alert','Identify malware family','Isolate endpoint','Collect forensic evidence','Remove malware','Check for lateral movement','Patch exploited weakness','Restore system & validate'],
+ 'Ransomware containment':['Isolate affected systems','Disable compromised accounts','Block C2 indicators','Identify encryption scope','Preserve evidence (immutable)','Activate crisis team','Restore from clean backup','Notify management & legal'],
+ 'Cloud credential compromise':['Review suspicious API calls','Disable access keys','Rotate secrets','Review IAM permissions','Check for new resources','Stop malicious workloads','Review public exposure','Update cloud policies'],
+ 'Data exfiltration alert':['Identify source & destination','Validate data volume','Check user & asset context','Block destination','Preserve logs','Notify legal / compliance','Determine data classification','Prepare breach assessment'],
+ 'Privileged access misuse':['Review privileged session','Validate change activity','Check approval ticket','Suspend account if required','Review PAM session logs','Review command history','Escalate to management','Document evidence'],
+};
+function openPlaybook(name){
+  const steps=PB_STEPS[name]||PB_STEPS['Malware alert response'];
+  openDrawer(dHead(name,'SOAR runbook · approval-gated automation','<span class="tag t-purple">Playbook</span>')+'<div class="drawer-body">'
+    +'<div class="note" style="margin-bottom:14px">Automation: low-risk steps auto-execute; high-impact actions (account disable, isolation, firewall change) require analyst or manager approval. Every step is audit-logged.</div>'
+    +'<div class="stepper">'+steps.map((s,i)=>'<div class="step"><div class="n">'+(i+1)+'</div><div class="ct"><b>'+s+'</b><p class="tiny muted">'+(i<3?'Auto · enrichment':i<steps.length-2?'Analyst-approved':'Manager-approved · high impact')+'</p></div></div>').join('')+'</div>'
+    +'<div class="flex wrap" style="margin-top:16px;gap:8px"><button class="btn primary sm" onclick="alert(\'Playbook execution started (demo)\')">Run playbook</button><button class="btn sm" onclick="openCopilot(\'Recommend containment actions for a '+name.replace(' response','').replace(' containment','')+' scenario.\')">&#10024; Copilot assist</button><button class="btn sm">Edit steps</button></div>'
+  +'</div>');
+}
+function openHuntBuilder(){
+  openDrawer(dHead('New Threat Hunt','Hypothesis-driven workflow','<span class="tag t-purple">Hunt</span>')+'<div class="drawer-body">'
+    +'<div class="sec-title">1 · Hypothesis</div>'
+    +'<div class="search" style="max-width:none;margin-bottom:14px">&#9998; <input value="Adversary may be using cloud IAM role chaining for privilege escalation" /></div>'
+    +'<div class="sec-title">2 · Hunt type</div>'
+    +'<div class="pill-row" style="margin-bottom:14px">'+['Hypothesis','IOC','Behavior','Intel-led','Anomaly','Campaign'].map((t,i)=>'<span class="tag '+(i===0?'t-purple':'t-info')+'">'+t+'</span>').join(' ')+'</div>'
+    +'<div class="sec-title">3 · MITRE techniques</div>'
+    +'<div style="margin-bottom:14px">'+mitrePills(['T1098','T1548','T1078.004'])+'</div>'
+    +'<div class="sec-title">4 · AI-generated query</div>'
+    +'<div class="codeblk">CloudTrail\n| where eventName in ("AssumeRole","CreateAccessKey","AttachRolePolicy")\n| summarize chain=make_list(eventName) by userIdentity.arn, bin(eventTime,10m)\n| where array_length(chain) >= 3</div>'
+    +'<div class="flex wrap" style="margin-top:16px;gap:8px"><button class="btn primary sm" onclick="alert(\'Hunt launched (demo)\')">Launch hunt</button><button class="btn sm" onclick="openCopilot(\'Suggest a better query and additional data sources for cloud IAM privilege escalation hunting.\')">&#10024; Refine with AI</button></div>'
+  +'</div>');
+}
+
+/* ---- Claude integration: context-aware across every module ---- */
+const MODULE_CTX = {
+  dashboard:{label:'Enterprise Dashboard', chips:['Summarize our current cyber risk posture','What are today\'s top 3 risks?','Brief the board in 3 bullets']},
+  soc:{label:'SOC Operations', chips:['Which 5 alerts should I triage first?','Why is AL-4821 critical?','Draft a shift handover summary','Recommend response for the SMB lateral movement alert']},
+  incidents:{label:'Incidents', chips:['Summarize INC-2026-0412','Map INC-2026-0412 to MITRE ATT&CK','Recommend containment actions','Generate an executive closure report']},
+  hunt:{label:'Threat Hunting', chips:['Suggest 3 hunt hypotheses from current telemetry','Write a KQL query for DNS tunneling','Which MITRE techniques are uncovered?','Turn the latest intel into a hunt']},
+  vuln:{label:'Vulnerability Management', chips:['Which 5 vulns should we patch first?','Explain CVE-2024-3400 business impact','Suggest compensating controls for VPN-GW-02','Predict breach likelihood for our top vulns']},
+  iam:{label:'Identity & Access', chips:['Why is svc-backup high risk?','Detect account-takeover patterns','Recommend access reviews','Find toxic permission combinations']},
+  network:{label:'Network Defense', chips:['Investigate the news-cdn[.]live beacon','Recommend firewall rule changes','Detect lateral movement paths','Explain the DNS tunneling signal']},
+  appsec:{label:'Application Security', chips:['Prioritize exploitable app vulns','Explain the SQLi burst on /api/orders','Map attacks to OWASP Top 10','Draft a developer fix for the IDOR']},
+  endpoint:{label:'Endpoint Defense', chips:['Summarize the FIN-WS-204 timeline','Recommend containment for FIN-WS-204','Is this ransomware behavior?','Map endpoint activity to MITRE']},
+  cloud:{label:'Cloud Security', chips:['Cloud attack path for the public S3 exposure','Fix the over-permissive ci-deployer role','Prioritize our cloud misconfigs','Least-privilege policy recommendation']},
+  ti:{label:'Threat Intelligence', chips:['Map APT-Sandworm TTPs to our coverage','Convert this week\'s intel into hunts','Recommend new detection rules','Which threats target our sector?']},
+  detect:{label:'Detection Engineering', chips:['Create a Sigma rule for LSASS dumping','Close our top 5 MITRE gaps','Explain this detection\'s logic','Suggest tuning to cut false positives']},
+  soar:{label:'SOAR & Automation', chips:['Which responses can we safely automate?','Build a phishing response playbook','Recommend approval gates','Draft an isolation workflow']},
+  compliance:{label:'Compliance & GRC', chips:['Identify our top compliance gaps','Map INC-2026-0409 to failed controls','Draft an ISO 27001 audit response','Build a remediation plan with owners']},
+  reports:{label:'Reports', chips:['Generate the Executive Cyber Posture Report','Draft the Daily SOC Operations Report','Write the Board Cybersecurity Report','Summarize this week\'s hunts']},
+  architecture:{label:'Architecture & Data Model', chips:['Explain the data flow end to end','How is the risk score calculated?','Describe the core data entities']},
+  admin:{label:'Roles & Access', chips:['Explain least-privilege for SOC L1','Which roles can approve automation?','Recommend RBAC for a new hunter']},
+};
+const DEFAULT_CHIPS=['Summarize this view','What needs my attention?','Recommend next actions'];
+let copStarted=false;
+let copFocus=null;
+function setCopFocus(o){ copFocus=o; }
+function moduleLabel(){ return (MODULE_CTX[state.module]||{}).label || 'CyberShield'; }
+
+function claudeStrip(){
+  const m=MODULE_CTX[state.module]||{}; const chips=(m.chips||DEFAULT_CHIPS).slice(0,3);
+  return '<div class="card" style="margin-bottom:16px;border:1px solid var(--line2);background:linear-gradient(90deg,rgba(168,85,247,.12),rgba(34,211,238,.06))">'
+    +'<div class="flex between wrap" style="gap:10px"><div class="flex" style="gap:11px">'
+    +'<div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--purple),var(--accent2));display:grid;place-items:center;color:#fff;font-weight:800;flex:none">&#10024;</div>'
+    +'<div><b>'+tr('CLAUDE_MON')+'</b><div class="tiny muted">'+tr('CSS1')+moduleLabel()+tr('CSS2')+'</div></div></div>'
+    +'<button class="btn primary sm" onclick="openCopilot()">&#10024; '+tr('Ask Claude')+'</button></div>'
+    +'<div class="pill-row" style="margin-top:12px">'+chips.map(c=>'<span class="chip" onclick="openCopilot(\''+c.replace(/'/g,"\\'")+'\')">'+c+'</span>').join('')+'</div></div>';
+}
+function refreshCopChips(){
+  const ctx=document.getElementById('copCtx');
+  if(ctx) ctx.textContent=tr('Powered by Claude')+' · '+moduleLabel()+' · '+tr(ROLES[state.role].name);
+  const el=document.getElementById('copChips'); if(!el) return;
+  const chips=((MODULE_CTX[state.module]||{}).chips)||DEFAULT_CHIPS;
+  el.innerHTML=chips.map(c=>'<span class="chip" onclick="askCop(this.textContent)">'+c.replace(/'/g,'&#39;')+'</span>').join('');
+}
+function dataForModule(){
+  const base={module:moduleLabel(), role:ROLES[state.role].name, enterpriseRiskScore:78};
+  switch(state.module){
+    case 'soc': base.alerts=ALERTS; break;
+    case 'incidents': base.incidents=INCIDENTS; break;
+    case 'hunt': base.hunts=HUNTS; base.activeTechniques=TECH_ACTIVE; break;
+    case 'vuln': base.vulnerabilities=VULNS; base.riskyAssets=RISKY_ASSETS; break;
+    case 'iam': base.riskyUsers=RISKY_USERS; break;
+    case 'compliance': base.frameworks=COMPLIANCE; break;
+    case 'ti': base.activeTechniques=TECH_ACTIVE; base.alerts=ALERTS.slice(0,4); break;
+    case 'detect': base.detections=DETECTIONS; break;
+    case 'dashboard': base.alerts=ALERTS.slice(0,5); base.incidents=INCIDENTS.slice(0,4); base.riskyAssets=RISKY_ASSETS.slice(0,5); base.riskyUsers=RISKY_USERS.slice(0,5); break;
+    default: base.alerts=ALERTS.slice(0,4); base.riskyAssets=RISKY_ASSETS.slice(0,4);
+  }
+  if(copFocus) base.focus=copFocus;
+  return [base];
+}
+const LANG_NAME={en:'English',ar:'Arabic',te:'Telugu'};
+function claudePrompt(q){
+  const ln=LANG_NAME[state.lang]||'English';
+  return "You are Claude, embedded as the Cyber Defense Copilot inside CyberShield AI, an enterprise SOC and threat-hunting platform. "
+    +"The analyst is in the "+moduleLabel()+" module, acting as "+ROLES[state.role].name+". "
+    +"Treat the attached JSON telemetry as ground truth. Answer concisely and operationally, like a senior SOC analyst / threat hunter. "
+    +"Reference specific alert / incident / CVE IDs, MITRE ATT&CK technique IDs, risk scores and concrete next actions where relevant. "
+    +"IMPORTANT: Write your ENTIRE response in "+ln+" ("+state.lang+"). Translate all explanatory prose into "+ln+", but keep technical identifiers in their original Latin form — CVE IDs (e.g. CVE-2024-3400), MITRE technique codes (e.g. T1059.001), hostnames, IOCs, product names, field names, and any code or queries. "
+    +(state.lang==='ar'?"Use right-to-left Arabic. ":"")
+    +"Keep it under ~150 words. Light HTML only: <b>, <br>, and <span class='mono'> for IDs and queries. "
+    +"Analyst question: "+q;
+}
+function normalizeClaude(res){
+  if(res==null) return null;
+  if(typeof res==='string') return res.trim()||null;
+  if(res.text) return res.text;
+  if(res.output) return res.output;
+  if(res.answer) return res.answer;
+  if(res.message) return res.message;
+  if(res.content){ if(typeof res.content==='string') return res.content;
+    if(Array.isArray(res.content)) return res.content.map(c=>(c&&c.text)||'').join(' ').trim()||null; }
+  return null;
+}
+function openCopilot(seed){
+  $('#copilot').classList.add('open');$('#backdrop').classList.add('show');
+  if(!copStarted){copStarted=true;
+    pushCop('ai',tr('COP_INTRO'));
+  }
+  refreshCopChips();
+  if(seed) askCop(seed);
+}
+function closeCopilot(){$('#copilot').classList.remove('open');$('#backdrop').classList.remove('show')}
+function pushCop(who,txt){
+  const b=$('#copBody');
+  b.insertAdjacentHTML('beforeend','<div class="cop-msg '+who+'"><div class="cop-av">'+(who==='ai'?'&#10024;':'&#129489;')+'</div><div class="b">'+txt+'</div></div>');
+  b.scrollTop=b.scrollHeight;
+}
+function sendCop(){const v=$('#copInput').value.trim();if(!v)return;$('#copInput').value='';askCop(v)}
+async function askCop(q){
+  pushCop('me',q);
+  const b=$('#copBody');
+  b.insertAdjacentHTML('beforeend','<div class="cop-msg ai" id="typing"><div class="cop-av">&#10024;</div><div class="b muted">'+tr('Claude is analyzing')+' '+moduleLabel()+' '+tr('telemetry')+'…</div></div>');
+  b.scrollTop=b.scrollHeight;
+  let answer=null;
+  try{
+    if(window.cowork && typeof window.cowork.askClaude==='function'){
+      const res=await window.cowork.askClaude(claudePrompt(q), dataForModule());
+      answer=normalizeClaude(res);
+    }
+  }catch(e){ answer=null; }
+  const t=document.getElementById('typing'); if(t) t.remove();
+  if(answer){
+    answer+='<div class="tiny" style="margin-top:8px;color:var(--accent2)">&#10024; Claude · '+tr('grounded in')+' '+moduleLabel()+'</div>';
+  }else{
+    answer=copReply(q)+'<div class="tiny muted" style="margin-top:8px;border-top:1px solid var(--line);padding-top:6px">Demo response. Open this app as a Cowork Artifact for live Claude answers grounded in the active module.</div>';
+  }
+  pushCop('ai',answer);
+}
+function copReply(q){
+  const s=q.toLowerCase();
+  if((s.indexOf('why')>=0&&s.indexOf('alert')>=0)||s.indexOf('4821')>=0)
+    return '<b>AL-4821 is Critical (risk 96).</b><br>• Encoded PowerShell (<span class="mono">-enc</span>) spawned from <span class="mono">winword.exe</span> — classic macro to LotL chain (T1059.001).<br>• Followed by LSASS memory access via <span class="mono">comsvcs.dll MiniDump</span> (T1003.001) — credential theft.<br>• Outbound to <span class="mono">news-cdn[.]live</span> — known C2.<br><b>Why critical:</b> Finance-segment host, credential access + active C2, matches APT-Sandworm TTPs. <b>Recommend:</b> host already auto-isolated — reset j.okoro creds, hunt SMB lateral movement, open incident.';
+  if(s.indexOf('dns tunnel')>=0)
+    return 'Here is a hunt query for <b>DNS tunneling</b> (T1071.004):<br><div class="codeblk" style="margin-top:8px">DnsEvents<br>| where TimeGenerated &gt; ago(24h)<br>| summarize q=count(), avglen=avg(strlen(QueryName)),<br>&nbsp;&nbsp;uniq=dcount(QueryName) by ClientIP, bin(TimeGenerated,10m)<br>| where q &gt; 200 and avglen &gt; 50 and uniq &gt; 150</div>Flags high-volume, high-entropy subdomain queries. Want me to convert to Splunk SPL or run it?';
+  if(s.indexOf('mitre')>=0&&(s.indexOf('incident')>=0||s.indexOf('0412')>=0))
+    return '<b>INC-2026-0412 kill chain:</b><br>• <span class="mono">T1566.001</span> Initial Access — malicious macro<br>• <span class="mono">T1059.001</span> Execution — PowerShell<br>• <span class="mono">T1003.001</span> Credential Access — LSASS<br>• <span class="mono">T1021.002</span> Lateral Movement — SMB<br>• <span class="mono">T1486</span> Impact — ransomware staging<br>Mapped to ATT&CK with evidence per technique. Shall I generate the closure report?';
+  if(s.indexOf('executive')>=0||s.indexOf('board')>=0||s.indexOf('summary')>=0)
+    return '<b>Executive Summary — Ransomware Incident (INC-2026-0412)</b><br>A finance workstation was compromised via a phishing macro leading to credential theft and ransomware staging. The host was auto-isolated within 2 minutes; no encryption occurred and no data loss is confirmed. Two related accounts were reset. Estimated avoided impact: <b>$18.2M</b>. Root cause: macro execution + delayed VPN patch. Recommended investments: PAM rollout, macro hardening, 24x7 MDR. <i>Full report ready to export.</i>';
+  if(s.indexOf('containment')>=0||s.indexOf('respond')>=0||s.indexOf('recommend')>=0)
+    return '<b>Recommended containment:</b><br>1. Isolate affected host(s) — <span class="mono">FIN-WS-204</span> done<br>2. Disable / reset compromised accounts<br>3. Block C2 indicators (<span class="mono">news-cdn[.]live</span>, hash a3f9…e21b)<br>4. Hunt lateral movement (SMB/RDP) across FIN segment<br>5. Preserve forensic evidence (immutable)<br>I can trigger the Ransomware Containment playbook (manager approval required). Proceed?';
+  if(s.indexOf('sigma')>=0||s.indexOf('detection')>=0||s.indexOf('rule')>=0)
+    return '<div class="codeblk">title: Encoded PowerShell + LSASS Access<br>logsource: {category: process_creation, product: windows}<br>detection:<br>&nbsp;&nbsp;sel_ps: {Image|endswith: powershell.exe, CommandLine|contains: \'-enc\'}<br>&nbsp;&nbsp;sel_lsass: {CommandLine|contains: [\'comsvcs\',\'MiniDump\',\'lsass\']}<br>&nbsp;&nbsp;condition: sel_ps and sel_lsass<br>level: critical<br>tags: [attack.t1059.001, attack.t1003.001]</div>Tuning: allowlist EDR/backup service accounts. Deploy to Sentinel + Defender?';
+  if(s.indexOf('control')>=0&&s.indexOf('fail')>=0)
+    return '<b>Control failures (INC-2026-0412):</b><br>• <span class="mono">ISO A.8.7</span> Malware protection — macro executed<br>• <span class="mono">A.5.17</span> Authentication — creds reused<br>• <span class="mono">A.8.8</span> Vuln mgmt — delayed patch<br>Mapped to NIST <span class="mono">PR.AC</span>, <span class="mono">DE.CM</span>. I have drafted the remediation plan with owners and due dates — open in Compliance?';
+  if((s.indexOf('hunt')>=0&&s.indexOf('hypoth')>=0)||s.indexOf('suggest')>=0)
+    return 'Based on current telemetry I suggest:<br>1. <b>Off-hours privileged PowerShell</b> to lateral movement (active signals on FIN segment)<br>2. <b>DNS tunneling</b> low-and-slow exfil (MKT-WS-77 beaconing)<br>3. <b>Cloud IAM role chaining</b> to privesc (ci-deployer key anomaly)<br>Each maps to MITRE with ready-to-run queries. Want me to scaffold hunt #1?';
+  if(s.indexOf('activity related')>=0||s.indexOf('investigate')>=0)
+    return 'Pulling 24h activity… Key findings: anomalous auth from new geo, linkage to an active alert, and access to sensitive resources outside baseline. Risk elevated to <b>High</b>. I recommend session revocation + step-up verification. Want the full timeline or to trigger a response?';
+  if(s.indexOf('firewall')>=0)
+    return 'I found <b>4 over-permissive rules</b> on the management VLAN (any-to-any). Recommended: scope source to jump-box subnet <span class="mono">10.10.50.0/24</span>, deny inbound from user VLANs, log+alert on management-plane access. This closes the lateral-movement path used in INC-2026-0412. Generate the change request?';
+  if(s.indexOf('automat')>=0)
+    return 'Safe to fully automate (low-risk, high-confidence): IP/domain enrichment, IOC blocking on proxy, phishing email clawback, ticket creation, and session revocation for confirmed impossible-travel. Keep manual approval for: account disable, endpoint isolation, firewall changes, cloud key revocation. This frees ~38 analyst-hours/week.';
+  return 'I have analyzed the request against your telemetry. I can investigate entities, explain alerts, build hunt queries (KQL/SPL/SQL), map MITRE ATT&CK, summarize incidents, draft executive/board reports, generate Sigma/detection rules, and recommend response actions. Try one of the suggested prompts, or tell me the alert / incident / entity you want to dig into.';
+}
+
+function initRoles(){
+  rebuildRoleSelect();
+  $('#roleSelect').onchange=(e)=>setRole(e.target.value);
+}
+$('#globalSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){openCopilot('Search and investigate: '+e.target.value)}});
+
+initLang();
+initRoles();
+applyLang();
+buildNav();
+render();
+</script>
+</body>
+</html>
